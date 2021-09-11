@@ -2,6 +2,7 @@ from matplotlib import pyplot
 import OutlierDetector
 import Smoother
 import json
+import numpy as np
 
 
 CONDITIONS = ['Free', 'True', 'Lie']
@@ -75,10 +76,10 @@ def experiment_old(data):
 
 
 def extract_data(data):
-    search_from = 15
-    count = 100
+    search_from = 0
+    count = 4
     condition = 0
-    # condition = 2
+    condition = 2
     participantAnswer = 1
 
     pupilDataTrials = data['trials'][0]['pupilDataTrials']
@@ -101,8 +102,8 @@ def extract_data(data):
                     "smoothed" : smoothed,
                     "condition" : CONDITIONS[condition],
                     "label_suffix" : str(pupil_data_trial['stimuliId']),
-                    "decision_phase" : get_predecision_phase(smoothed, marker), # from marker to preceeding 120 frames
-                    "initial_decision_phase" : get_initial_decision_phase(smoothed) # from start to 120 frames
+                    "decision_phase" : get_predecision_phase(smoothed, marker), # from marker to preceeding n frames
+                    "initial_decision_phase" : get_initial_decision_phase(smoothed) # from start to n frames
                 }
                 extracted.append(trial)
                 count -= 1
@@ -165,19 +166,29 @@ def predecision_raw_plot(data):
         pyplot.plot(d["decision_phase"])
     pyplot.show()
 
+def predecision_gradient_plot(data):
+    for d in data:
+        # pyplot.plot(d["decision_phase"])
+        f = np.array(d["decision_phase"], dtype = float)
+        data_gradient = np.gradient(f)
+        pyplot.plot(data_gradient)
+    pyplot.show()
+
 
 def experiment():
     # data = json.load(open("ExpData/M33_4.dat"))
-    data = json.load(open("testFiles/sampleJson.dat"))
+    # data = json.load(open("testFiles/sampleJson.dat"))
+    data = json.load(open("testFiles/sampleJson2.dat"))
     extracted = extract_data(data)
-    raw_plot(extracted)
-    #predecision_raw_plot(extracted)
+    # raw_plot(extracted)
+    # predecision_raw_plot(extracted)
+    predecision_gradient_plot(extracted)
     
-    initial_decision_phase_data = [x["initial_decision_phase"] for x in extracted]
-    generic_normalized_plot(initial_decision_phase_data)
-    normalized_initial_decision_phase_data = get_normalized_data(initial_decision_phase_data)
-    mean_initial_decision_phase_data = get_mean_line(normalized_initial_decision_phase_data)
-    single_plot_with_label(mean_initial_decision_phase_data, "Time", "Dilation", "Mean Dilation")
+    # initial_decision_phase_data = [x["initial_decision_phase"] for x in extracted]
+    # generic_normalized_plot(initial_decision_phase_data)
+    # normalized_initial_decision_phase_data = get_normalized_data(initial_decision_phase_data)
+    # mean_initial_decision_phase_data = get_mean_line(normalized_initial_decision_phase_data)
+    # single_plot_with_label(mean_initial_decision_phase_data, "Time", "Dilation", "Mean Dilation")
 
     #decision_phase_data = [x["decision_phase"] for x in extracted]
     #generic_normalized_plot(decision_phase_data)
