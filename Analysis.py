@@ -1,4 +1,5 @@
 from matplotlib import pyplot
+from numpy.lib.function_base import median
 import OutlierDetector
 import Smoother
 import json
@@ -76,8 +77,8 @@ def experiment_old(data):
 
 
 def extract_data(data):
-    search_from = 0
-    count = 4
+    search_from = 10
+    count = 3
     condition = 0
     condition = 2
     participantAnswer = 1
@@ -168,21 +169,35 @@ def predecision_raw_plot(data):
 
 def predecision_gradient_plot(data):
     for d in data:
-        # pyplot.plot(d["decision_phase"])
         f = np.array(d["decision_phase"], dtype = float)
         data_gradient = np.gradient(f)
         pyplot.plot(data_gradient)
     pyplot.show()
 
+def predecission_delta_plot(data, threshold):
+    for d in data:
+        f = np.array(d["decision_phase"], dtype = float)
+        diff = np.diff(f)
+        diff[abs (diff)<threshold]=0
+        
+        diff[diff<0]=-1
+        diff[diff>0]=1
+        # diff = np.diff(diff)
+        
+        print (np.mean(diff))
+        pyplot.plot(diff)
+    pyplot.show()
+
 
 def experiment():
-    # data = json.load(open("ExpData/M33_4.dat"))
+    data = json.load(open("ExpData/M33_4.dat"))
     # data = json.load(open("testFiles/sampleJson.dat"))
-    data = json.load(open("testFiles/sampleJson2.dat"))
+    # data = json.load(open("testFiles/sampleJson2.dat"))
     extracted = extract_data(data)
     # raw_plot(extracted)
     # predecision_raw_plot(extracted)
-    predecision_gradient_plot(extracted)
+    # predecision_gradient_plot(extracted)
+    predecission_delta_plot(extracted, 0.005)
     
     # initial_decision_phase_data = [x["initial_decision_phase"] for x in extracted]
     # generic_normalized_plot(initial_decision_phase_data)
