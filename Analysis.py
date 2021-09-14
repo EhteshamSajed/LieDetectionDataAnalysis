@@ -59,7 +59,7 @@ def experiment_old(data):
         pupil_data_trial = pupilDataTrials[search_from]
         if pupil_data_trial['participantAnswer'] != 0:
             if pupil_data_trial['question']['condition'] == condition and assess_participants_answer(pupil_data_trial, ANSWERES[participantAnswer]):
-                removed_ouliers = OutlierDetector.remove_outliers(pupil_data_trial['pupilDiameter'])
+                removed_ouliers = OutlierDetector.remove_outliers(pupil_data_trial['pupilDiameter'], True)
                 markerPos = []
                 markerPos.append(OutlierDetector.relative_position_on_removed_outiler(
                     removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60)))
@@ -77,10 +77,10 @@ def experiment_old(data):
 
 
 def extract_data(data):
-    search_from = 10
-    count = 3
+    search_from = 0
+    count = 2
     condition = 0
-    condition = 2
+    # condition = 2
     participantAnswer = 1
 
     pupilDataTrials = data['trials'][0]['pupilDataTrials']
@@ -91,7 +91,7 @@ def extract_data(data):
         pupil_data_trial = pupilDataTrials[search_from]
         if pupil_data_trial['participantAnswer'] != 0:
             if pupil_data_trial['question']['condition'] == condition and assess_participants_answer(pupil_data_trial, ANSWERES[participantAnswer]):
-                removed_ouliers = OutlierDetector.remove_outliers(pupil_data_trial['pupilDiameter'])
+                removed_ouliers = OutlierDetector.remove_outliers(pupil_data_trial['pupilDiameter'], True)
                 markerPos = []
                 markerPos.append(OutlierDetector.relative_position_on_removed_outiler(
                     removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60)))
@@ -180,8 +180,8 @@ def predecission_delta_plot(data, threshold):
         diff = np.diff(f)
         diff[abs (diff)<threshold]=0
         
-        diff[diff<0]=-1
-        diff[diff>0]=1
+        # diff[diff<0]=-1
+        # diff[diff>0]=1
         # diff = np.diff(diff)
         
         print (np.mean(diff))
@@ -194,10 +194,10 @@ def experiment():
     # data = json.load(open("testFiles/sampleJson.dat"))
     # data = json.load(open("testFiles/sampleJson2.dat"))
     extracted = extract_data(data)
-    # raw_plot(extracted)
+    raw_plot(extracted)
     # predecision_raw_plot(extracted)
     # predecision_gradient_plot(extracted)
-    predecission_delta_plot(extracted, 0.005)
+    # predecission_delta_plot(extracted, 0.005)
     
     # initial_decision_phase_data = [x["initial_decision_phase"] for x in extracted]
     # generic_normalized_plot(initial_decision_phase_data)

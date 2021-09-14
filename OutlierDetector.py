@@ -1,9 +1,11 @@
 import statistics
+import numpy as np
+import pandas as pd
 
 n = 5
 
 
-def remove_outliers(value_list):
+def remove_outliers(value_list, linear_interpolation):
     threshold = get_threshold(max_absolute_change(
         value_list), median_absolute_deviation(value_list))
     out_value_list = []
@@ -15,6 +17,8 @@ def remove_outliers(value_list):
             out_value_list.append(value_list[i])
         i = i+1
     out_value_list.append(value_list[i])
+    if (linear_interpolation):
+        out_value_list = linear_interpolate(out_value_list)
     return out_value_list
 
 
@@ -45,10 +49,18 @@ def median_absolute_deviation(val_list):
 
 
 def relative_position_on_removed_outiler(filtered_value_list, original_position):
-    if original_position >= len(filtered_value_list): return -1
+    if original_position >= len(filtered_value_list):
+        return -1
     i = 0
     while i <= original_position:
         if filtered_value_list[i] == 0:
             original_position -= 1
-        i += 1 
+        i += 1
     return original_position
+
+
+def linear_interpolate(value_list):
+    value_list = np.array(value_list)
+    value_list = np.where(value_list==0 , np.nan, value_list)
+    return pd.Series(value_list).interpolate().array
+    

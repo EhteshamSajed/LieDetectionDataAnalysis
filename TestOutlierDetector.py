@@ -5,6 +5,7 @@ import OutlierDetector
 class TestOutlierDetector (unittest.TestCase):
     val_list = [1, 2, 3, 4, 5, 6]
     val_list1 = [2, 3, 7, 4, 8, 5, 1, 6]
+    val_list3 = [1, 2, 0, 0, 0, 5]
 
     def test_max_absolute_change(self):
         result = OutlierDetector.max_absolute_change(self.val_list)
@@ -25,13 +26,19 @@ class TestOutlierDetector (unittest.TestCase):
         self.assertEqual(result, 4)
 
     def test_remove_outliers(self):
-        result = OutlierDetector.remove_outliers(self.val_list)
+        result = OutlierDetector.remove_outliers(self.val_list, False)
         self.assertEqual(result, [1, 2, 3, 4, 5, 6])
-        result = OutlierDetector.remove_outliers(self.val_list1)
+        result = OutlierDetector.remove_outliers(self.val_list1, False)
         self.assertEqual(result, [2, 3, 7, 4, 8, 5, 0, 6])
+        result = OutlierDetector.remove_outliers(self.val_list1, True)
+        self.assertEqual(result, [2, 3, 7, 4, 8, 5, 5.50, 6])
 
     def test_relative_position_on_removed_outiler(self):
         result = OutlierDetector.relative_position_on_removed_outiler([2, 3, 7, 0, 8, 5, 0, 6], 4)
         self.assertEqual(result, 3)
         result = OutlierDetector.relative_position_on_removed_outiler([2, 3, 7, 0, 8, 5, 0, 6], 7)
         self.assertEqual(result, 5)
+
+    def test_linear_interpolate(self):
+        result = OutlierDetector.linear_interpolate(self.val_list3)
+        self.assertEqual(result, [1, 2, 2.75, 3.50, 4.25, 5])
