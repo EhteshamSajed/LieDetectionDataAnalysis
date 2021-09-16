@@ -4,6 +4,7 @@ import OutlierDetector
 import Smoother
 import json
 import numpy as np
+import statistics
 
 
 CONDITIONS = ['Free', 'True', 'Lie']
@@ -78,9 +79,9 @@ def experiment_old(data):
 
 def extract_data(data):
     search_from = 0
-    count = 2
+    count = 20
     condition = 0
-    # condition = 2
+    condition = 2
     participantAnswer = 1
 
     pupilDataTrials = data['trials'][0]['pupilDataTrials']
@@ -108,6 +109,40 @@ def extract_data(data):
                 }
                 extracted.append(trial)
                 count -= 1
+        search_from += 1
+    return extracted
+
+def extract_data_for_scatter_plot(data):        # forgot to call assess_participants_answer()
+    search_from = 0
+    count = 30
+    # condition = 0
+    # condition = 2
+    participantAnswer = 1
+
+    pupilDataTrials = data['trials'][0]['pupilDataTrials']
+
+    extracted = []
+
+    while (search_from < len(pupilDataTrials) and count > 0):
+        pupil_data_trial = pupilDataTrials[search_from]
+        if pupil_data_trial['participantAnswer'] != 0:
+            removed_ouliers = OutlierDetector.remove_outliers(pupil_data_trial['pupilDiameter'], True)
+            markerPos = []
+            markerPos.append(OutlierDetector.relative_position_on_removed_outiler(
+                removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60)))
+            smoothed = Smoother.smooth(removed_ouliers, 10, True)
+            marker = OutlierDetector.relative_position_on_removed_outiler(
+                removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60))
+            trial = {
+                "marker" : marker,
+                "smoothed" : smoothed,
+                "condition" : CONDITIONS[pupil_data_trial['question']['condition']],
+                "label_suffix" : str(pupil_data_trial['stimuliId']),
+                "decision_phase" : get_predecision_phase(smoothed, marker), # from marker to preceeding n frames
+                "initial_decision_phase" : get_initial_decision_phase(smoothed) # from start to n frames
+            }
+            extracted.append(trial)
+            count -= 1
         search_from += 1
     return extracted
 
@@ -188,16 +223,28 @@ def predecission_delta_plot(data, threshold):
         pyplot.plot(diff)
     pyplot.show()
 
+def predecission_scatter_plot_mean(data):
+    for d in data:
+        m = '^'
+        y = -0.1
+        if d["condition"] == "Free":
+            m = 'o'
+            y = 0.1
+        print(statistics.mean(d["decision_phase"]))
+        pyplot.scatter(statistics.mean(d["decision_phase"]), y, marker=m, c = '#000000')
+    pyplot.show()
 
 def experiment():
     data = json.load(open("ExpData/M33_4.dat"))
     # data = json.load(open("testFiles/sampleJson.dat"))
     # data = json.load(open("testFiles/sampleJson2.dat"))
-    extracted = extract_data(data)
-    raw_plot(extracted)
+    # extracted = extract_data(data)
+    extracted = extract_data_for_scatter_plot(data)
+    # raw_plot(extracted)
     # predecision_raw_plot(extracted)
     # predecision_gradient_plot(extracted)
     # predecission_delta_plot(extracted, 0.005)
+    predecission_scatter_plot_mean(extracted)
     
     # initial_decision_phase_data = [x["initial_decision_phase"] for x in extracted]
     # generic_normalized_plot(initial_decision_phase_data)
