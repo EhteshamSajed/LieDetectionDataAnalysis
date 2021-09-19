@@ -5,10 +5,11 @@ import json;
 
 # data = json.load(open("testFiles/sampleJson.dat"));
 data = json.load(open("testFiles/sampleJson2.dat"));
+# data = json.load(open("ExpData/M33_4.dat"));
 
 # print (data['trials'][0]['pupilDataTrials'][0]['pupilDiameter'][0]);
 
-# pyplot.plot(data['trials'][0]['pupilDataBaselines'][0]['pupilDiameter'], label = 'Baseline');
+pyplot.plot(data['trials'][0]['pupilDataBaselines'][0]['pupilDiameter'], label = 'Baseline');
 
 indexes = [2, 4, 10];
 lbl = 'Free'
@@ -16,7 +17,7 @@ lbl = 'Free'
 # lbl = 'Lie'
 
 for index in indexes:
-    removed_ouliers = OutlierDetector.remove_outliers(data['trials'][0]['pupilDataTrials'][index]['pupilDiameter'])
+    removed_ouliers = OutlierDetector.remove_outliers(data['trials'][0]['pupilDataTrials'][index]['pupilDiameter'], True)
     markerPos = []
     markerPos.append(OutlierDetector.relative_position_on_removed_outiler(removed_ouliers, int (data['trials'][0]['pupilDataTrials'][index]['elapseTicksToAnswer']/10000000 * 60)))
     smoothed = Smoother.smooth(removed_ouliers, 10, True)

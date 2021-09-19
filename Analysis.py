@@ -112,6 +112,14 @@ def extract_data(data):
         search_from += 1
     return extracted
 
+def calculate_baseline_mean(data):
+    pupilDiameter = data['trials'][0]['pupilDataBaselines'][0]['pupilDiameter']
+    return statistics.mean (pupilDiameter)
+
+def get_bs_mean_difference(pupil_diameter, bs_mean):
+    pupil_diameter = [x - bs_mean for x in pupil_diameter]
+    return statistics.mean(pupil_diameter)
+
 def extract_data_for_scatter_plot(data):        # forgot to call assess_participants_answer()
     search_from = 0
     count = 30
@@ -238,13 +246,13 @@ def experiment():
     data = json.load(open("ExpData/M33_4.dat"))
     # data = json.load(open("testFiles/sampleJson.dat"))
     # data = json.load(open("testFiles/sampleJson2.dat"))
-    # extracted = extract_data(data)
-    extracted = extract_data_for_scatter_plot(data)
+    extracted = extract_data(data)
+    # extracted = extract_data_for_scatter_plot(data)
     # raw_plot(extracted)
     # predecision_raw_plot(extracted)
     # predecision_gradient_plot(extracted)
     # predecission_delta_plot(extracted, 0.005)
-    predecission_scatter_plot_mean(extracted)
+    # predecission_scatter_plot_mean(extracted)
     
     # initial_decision_phase_data = [x["initial_decision_phase"] for x in extracted]
     # generic_normalized_plot(initial_decision_phase_data)
