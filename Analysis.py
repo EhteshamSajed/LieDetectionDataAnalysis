@@ -125,16 +125,6 @@ def calculate_baseline_mean(data, feedbackCondition=0):
     pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter']
     return statistics.mean(pupilDiameter)
 
-
-def get_bs_mean_difference(data, bs_mean, scope):
-    for d in data:
-        pyplot.scatter(statistics.mean([x - bs_mean for x in d[scope]]), 
-            y =-0.1 if d["condition"]=='Free' else 0.1,
-            marker='^' if d["condition"]=='Free' else 'o',
-            c='#000000')
-    pyplot.legend()
-    pyplot.show()
-
 def get_bs_mean_difference(data, scope):
     for d in data:
         pyplot.scatter(statistics.mean(d[scope]), 
