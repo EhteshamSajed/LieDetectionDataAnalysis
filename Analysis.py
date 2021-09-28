@@ -25,8 +25,6 @@ def single_plot_with_label(data_array, xLabel, yLabel, title, save=False):
     fig, ax = pyplot.subplots()
     ax.plot(data_array)
     ax.set(xlabel=xLabel, ylabel=yLabel, title=title)
-    # if save:
-    #    fig.save()
     pyplot.show()
 
 
@@ -84,19 +82,33 @@ def predecission_scatter_plot_mean(data):
 
 
 def experiment():
+    experiment_files = ["ExpData/M33_4.dat", "testFiles/sampleJson.dat", "testFiles/sampleJson2.dat", "ExpData/M27_3.dat", "ExpData/M31_2.dat"]
+    row, col = Utilities.split_single_colunm(len(experiment_files))
+    feedbackCondition = 1
+    condition = Utilities.CONDITIONS[2]
+    i = 1
+    for file in experiment_files:
+        data = json.load(open(file))
+        extracted = Utilities.extract_data(data, feedbackCondition = feedbackCondition)
+        average_trend = Utilities.average_difference_within_condition(extracted, "decision_phase", condition)
+        pyplot.subplot(row, col, i)
+        pyplot.plot(average_trend["average_trend"])
+        i += 1
+    pyplot.suptitle("Average of all " + condition + " for different subjects. Feedback: " + str(feedbackCondition))
+    pyplot.show()
+
+
     # data = json.load(open("ExpData/M33_4.dat"))
     # data = json.load(open("testFiles/sampleJson.dat"))
-    data = json.load(open("testFiles/sampleJson2.dat"))
-    # extracted = extract_data(data)
-    # extracted = extract_data_for_scatter_plot(data)
-    extracted = Utilities.extract_data(data)
+    # data = json.load(open("testFiles/sampleJson2.dat"))
+    # extracted = Utilities.extract_data(data)
     # raw_plot(extracted)
     # predecision_raw_plot(extracted)
     # predecision_gradient_plot(extracted)
     # predecission_delta_plot(extracted, 0.005)
     # predecission_scatter_plot_mean(extracted)
     # Utilities.get_bs_mean_difference(extracted, "baseline_difference_decision_phase")
-    Utilities.average_difference_within_condition(extracted, "decision_phase", Utilities.CONDITIONS[2])
+    # Utilities.average_difference_within_condition(extracted, "decision_phase", Utilities.CONDITIONS[2])
 
     # initial_decision_phase_data = [x["initial_decision_phase"] for x in extracted]
     # generic_normalized_plot(initial_decision_phase_data)

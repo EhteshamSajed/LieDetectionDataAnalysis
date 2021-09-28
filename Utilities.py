@@ -103,4 +103,15 @@ def average_difference_within_condition(data, scope, condition='Free'):
         if d["condition"] == condition and not math.isnan(d[scope][0]):
             average_trend = [(g+h) for g, h in zip (d[scope], average_trend)]
     average_trend = [x / len(data) for x in average_trend]
-    return average_trend
+    result = {
+        "average_trend": average_trend,
+        "legend": condition
+    }
+    return result
+
+def split_single_colunm(n):
+    if not n%2 == 0: n+=1
+    arr = [n // 2 + (1 if x < n % 2 else 0)  for x in range (2)]
+    col = arr[0]
+    row = arr[1]
+    return row, col
