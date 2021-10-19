@@ -115,27 +115,5 @@ def unit_data_comparison():
     pyplot.title("Smoothed")
     pyplot.show()
 
-    # data = json.load(open("ExpData/M33_4.dat"))
-    # data = json.load(open("testFiles/sampleJson.dat"))
-    # data = json.load(open("testFiles/sampleJson2.dat"))
-    # extracted = Utilities.extract_data(data)
-    # raw_plot(extracted)
-    # predecision_raw_plot(extracted)
-    # predecision_gradient_plot(extracted)
-    # predecission_delta_plot(extracted, 0.005)
-    # predecission_scatter_plot_mean(extracted)
-    # Utilities.get_bs_mean_difference(extracted, "baseline_difference_decision_phase")
-    # Utilities.average_difference_within_condition(extracted, "decision_phase", Utilities.CONDITIONS[2])
-
-    # initial_decision_phase_data = [x["initial_decision_phase"] for x in extracted]
-    # generic_normalized_plot(initial_decision_phase_data)
-    # normalized_initial_decision_phase_data = get_normalized_data(initial_decision_phase_data)
-    # mean_initial_decision_phase_data = get_mean_line(normalized_initial_decision_phase_data)
-    # single_plot_with_label(mean_initial_decision_phase_data, "Time", "Dilation", "Mean Dilation")
-
-    #decision_phase_data = [x["decision_phase"] for x in extracted]
-    # generic_normalized_plot(decision_phase_data)
-
-
 # experiment()
 unit_data_comparison()
