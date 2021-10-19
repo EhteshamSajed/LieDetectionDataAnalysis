@@ -4,6 +4,19 @@ import OutlierDetector
 import Smoother
 import statistics
 import math
+import enum
+
+class Trial_Data(enum.Enum):
+    raw = 1
+    removed_ouliers = 2
+    marker = 3
+    smoothed = 4
+    condition = 5
+    decision_phase = 6
+    initial_decision_phase = 7
+    baseline_difference = 8
+    baseline_difference_decision_phase = 9
+    label_suffix = 10
 
 CONDITIONS = ['Free', 'True', 'Lie']
 ANSWERES = ['Any', 'True', 'False']
@@ -27,16 +40,18 @@ def extract_data(data, search_from = 0, count = 30, feedbackCondition = 0, parti
                 marker = OutlierDetector.relative_position_on_removed_outiler(
                     removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60))
                 trial = {
-                    "marker": marker,
-                    "smoothed": smoothed,
-                    "condition": CONDITIONS[pupil_data_trial['question']['condition']],
-                    "label_suffix": str(pupil_data_trial['stimuliId']),
+                    Trial_Data.raw.name: pupil_data_trial['pupilDiameter'],
+                    Trial_Data.removed_ouliers.name: removed_ouliers,
+                    Trial_Data.marker.name : marker,
+                    Trial_Data.smoothed.name: smoothed,
+                    Trial_Data.condition.name: CONDITIONS[pupil_data_trial['question']['condition']],
+                    Trial_Data.label_suffix.name: str(pupil_data_trial['stimuliId']),
                     # from marker to preceeding n frames
-                    "decision_phase": get_predecision_phase(smoothed, marker),
+                    Trial_Data.decision_phase.name: get_predecision_phase(smoothed, marker),
                     # from start to n frames
-                    "initial_decision_phase": get_initial_decision_phase(smoothed),
-                    "baseline_difference": [x - bs_mean for x in smoothed],
-                    "baseline_difference_decision_phase": [x - bs_mean for x in get_predecision_phase(smoothed, marker)]
+                    Trial_Data.initial_decision_phase.name: get_initial_decision_phase(smoothed),
+                    Trial_Data.baseline_difference.name: [x - bs_mean for x in smoothed],
+                    Trial_Data.baseline_difference_decision_phase.name: [x - bs_mean for x in get_predecision_phase(smoothed, marker)]
                 }
                 extracted.append(trial)
                 count -= 1

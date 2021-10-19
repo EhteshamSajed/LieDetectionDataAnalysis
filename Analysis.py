@@ -83,6 +83,7 @@ def predecission_scatter_plot_mean(data):
 
 def experiment():
     experiment_files = ["ExpData/M33_4.dat", "testFiles/sampleJson.dat", "testFiles/sampleJson2.dat", "ExpData/M27_3.dat", "ExpData/M31_2.dat"]
+    scope = Utilities.Trial_Data.decision_phase
     row, col = Utilities.split_single_colunm(len(experiment_files))
     feedbackCondition = 1
     condition = Utilities.CONDITIONS[2]
@@ -90,13 +91,29 @@ def experiment():
     for file in experiment_files:
         data = json.load(open(file))
         extracted = Utilities.extract_data(data, feedbackCondition = feedbackCondition)
-        average_trend = Utilities.average_difference_within_condition(extracted, "decision_phase", condition)
+        average_trend = Utilities.average_difference_within_condition(extracted, scope.name, condition)
         pyplot.subplot(row, col, i)
         pyplot.plot(average_trend["average_trend"])
         i += 1
     pyplot.suptitle("Average of all " + condition + " for different subjects. Feedback: " + str(feedbackCondition))
     pyplot.show()
 
+def unit_data_comparison():
+    file = "ExpData/M33_4.dat"
+    feedbackCondition = 1
+    index = 0
+    data = json.load(open(file))
+    extracted = Utilities.extract_data(data, feedbackCondition = feedbackCondition)
+    pyplot.subplot(3, 1, 1)
+    pyplot.plot(extracted[index][Utilities.Trial_Data.raw.name])    
+    pyplot.title("RAW")
+    pyplot.subplot(3, 1, 2)
+    pyplot.plot(extracted[index][Utilities.Trial_Data.removed_ouliers.name])
+    pyplot.title("Outliers removed")
+    pyplot.subplot(3, 1, 3)
+    pyplot.plot(extracted[index][Utilities.Trial_Data.smoothed.name])
+    pyplot.title("Smoothed")
+    pyplot.show()
 
     # data = json.load(open("ExpData/M33_4.dat"))
     # data = json.load(open("testFiles/sampleJson.dat"))
@@ -120,4 +137,5 @@ def experiment():
     # generic_normalized_plot(decision_phase_data)
 
 
-experiment()
+# experiment()
+unit_data_comparison()
