@@ -4,6 +4,7 @@ import json
 import numpy as np
 import statistics
 import Utilities
+import OutlierDetector
 
 def generic_normalized_plot(data_array):
     for dt in data_array:
@@ -82,11 +83,13 @@ def predecission_scatter_plot_mean(data):
 
 
 def experiment():
-    experiment_files = ["ExpData/M33_4.dat", "testFiles/sampleJson.dat", "testFiles/sampleJson2.dat", "ExpData/M27_3.dat", "ExpData/M31_2.dat"]
+    # experiment_files = ["ExpData/M33_4.dat", "testFiles/sampleJson.dat", "testFiles/sampleJson2.dat", "ExpData/M27_3.dat", "ExpData/M31_2.dat"]
+    experiment_files = ["ExpData/V2/M25_5.dat"]
+    # experiment_files = ["ExpData/V2/M31_6.dat"]
     scope = Utilities.Trial_Data.decision_phase
     row, col = Utilities.split_single_colunm(len(experiment_files))
     feedbackCondition = 1
-    condition = Utilities.CONDITIONS[2]
+    condition = Utilities.CONDITIONS[0]
     i = 1
     for file in experiment_files:
         data = json.load(open(file))
@@ -115,5 +118,14 @@ def unit_data_comparison():
     pyplot.title("Smoothed")
     pyplot.show()
 
-# experiment()
-unit_data_comparison()
+def showZeroedOutliers():
+    file = "ExpData/M33_4.dat"
+    data = json.load(open(file))
+    zeroed_outliers = OutlierDetector.remove_outliers(
+                    data ['trials'][1]['pupilDataTrials'] [0] ['pupilDiameter'], False)
+    pyplot.plot(zeroed_outliers)
+    pyplot.show()
+
+experiment()
+# unit_data_comparison()
+# showZeroedOutliers()

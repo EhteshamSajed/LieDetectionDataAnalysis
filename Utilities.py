@@ -63,13 +63,13 @@ def assess_participants_answer(pupil_data_trial, expected_answer):
     if int(pupil_data_trial['question']['circleString']) > 10:
         real_answer = 1
     participant_answer = pupil_data_trial['participantAnswer']
-    if pupil_data_trial['question']['condition'] == 0:
-        if expected_answer == ANSWERES[0]:
-            return True
-        if expected_answer == ANSWERES[1]:
-            return real_answer == participant_answer
-        else:
-            return real_answer != participant_answer
+    # if pupil_data_trial['question']['condition'] == 0:
+    #     if expected_answer == ANSWERES[0]:
+    #         return True
+    #     if expected_answer == ANSWERES[1]:
+    #         return real_answer == participant_answer
+    #     else:
+    #         return real_answer != participant_answer
 
     if pupil_data_trial['question']['condition'] == 2:
         if expected_answer == ANSWERES[0]:
@@ -78,6 +78,13 @@ def assess_participants_answer(pupil_data_trial, expected_answer):
             return real_answer != participant_answer
         else:
             return real_answer == participant_answer
+    else:
+        if expected_answer == ANSWERES[0]:
+            return True
+        if expected_answer == ANSWERES[1]:
+            return real_answer == participant_answer
+        else:
+            return real_answer != participant_answer
     return False
 
 def calculate_baseline_mean(data, feedbackCondition=0):
