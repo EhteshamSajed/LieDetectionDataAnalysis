@@ -6,6 +6,7 @@ import statistics
 import math
 import enum
 
+
 class Trial_Data(enum.Enum):
     raw = 1
     removed_ouliers = 2
@@ -18,18 +19,20 @@ class Trial_Data(enum.Enum):
     baseline_difference_decision_phase = 9
     label_suffix = 10
 
-CONDITIONS = ['Free', 'True', 'Lie']
+
+CONDITIONS = ['Free', 'True', 'Lie', 'All']
 ANSWERES = ['Any', 'True', 'False']
 DECISION_PHASE = 120  # 2 seconds
 START_FRAME = 30
 
-def extract_data(data, search_from = 0, count = 30, feedbackCondition = 0, participantAnswer = 1):
+
+def extract_data(data, search_from=0, count=30, feedbackCondition=0, participantAnswer=1, condition_index=3):
     pupilDataTrials = data['trials'][feedbackCondition]['pupilDataTrials']
     bs_mean = calculate_baseline_mean(data, feedbackCondition)
     extracted = []
     while (search_from < len(pupilDataTrials) and count > 0):
         pupil_data_trial = pupilDataTrials[search_from]
-        if pupil_data_trial['participantAnswer'] != 0:
+        if pupil_data_trial['participantAnswer'] != 0 and (condition_index == 3 or condition_index == pupil_data_trial['question']['condition']):
             if assess_participants_answer(pupil_data_trial, ANSWERES[participantAnswer]):
                 removed_ouliers = OutlierDetector.remove_outliers(
                     pupil_data_trial['pupilDiameter'], True)
@@ -42,7 +45,7 @@ def extract_data(data, search_from = 0, count = 30, feedbackCondition = 0, parti
                 trial = {
                     Trial_Data.raw.name: pupil_data_trial['pupilDiameter'],
                     Trial_Data.removed_ouliers.name: removed_ouliers,
-                    Trial_Data.marker.name : marker,
+                    Trial_Data.marker.name: marker,
                     Trial_Data.smoothed.name: smoothed,
                     Trial_Data.condition.name: CONDITIONS[pupil_data_trial['question']['condition']],
                     Trial_Data.label_suffix.name: str(pupil_data_trial['stimuliId']),
@@ -51,45 +54,38 @@ def extract_data(data, search_from = 0, count = 30, feedbackCondition = 0, parti
                     # from start to n frames
                     Trial_Data.initial_decision_phase.name: get_initial_decision_phase(smoothed),
                     Trial_Data.baseline_difference.name: [x - bs_mean for x in smoothed],
-                    Trial_Data.baseline_difference_decision_phase.name: [x - bs_mean for x in get_predecision_phase(smoothed, marker)]
+                    Trial_Data.baseline_difference_decision_phase.name: [
+                        x - bs_mean for x in get_predecision_phase(smoothed, marker)]
                 }
                 extracted.append(trial)
                 count -= 1
         search_from += 1
     return extracted
 
+
 def assess_participants_answer(pupil_data_trial, expected_answer):
+    if expected_answer == ANSWERES[0]:
+        return True
     real_answer = 2
     if int(pupil_data_trial['question']['circleString']) > 10:
         real_answer = 1
     participant_answer = pupil_data_trial['participantAnswer']
-    # if pupil_data_trial['question']['condition'] == 0:
-    #     if expected_answer == ANSWERES[0]:
-    #         return True
-    #     if expected_answer == ANSWERES[1]:
-    #         return real_answer == participant_answer
-    #     else:
-    #         return real_answer != participant_answer
-
     if pupil_data_trial['question']['condition'] == 2:
-        if expected_answer == ANSWERES[0]:
-            return True
         if expected_answer == ANSWERES[1]:
             return real_answer != participant_answer
         else:
             return real_answer == participant_answer
     else:
-        if expected_answer == ANSWERES[0]:
-            return True
         if expected_answer == ANSWERES[1]:
             return real_answer == participant_answer
         else:
             return real_answer != participant_answer
-    return False
+
 
 def calculate_baseline_mean(data, feedbackCondition=0):
     pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter']
     return statistics.mean(pupilDiameter)
+
 
 def get_predecision_phase(trial, marker):
     if marker > DECISION_PHASE:
@@ -97,8 +93,10 @@ def get_predecision_phase(trial, marker):
     else:
         return trial[0:marker]
 
+
 def get_initial_decision_phase(trial):
     return trial[START_FRAME: START_FRAME + DECISION_PHASE]
+
 
 def get_normalized_data(data_array):
     normalized_array = []
@@ -119,11 +117,12 @@ def get_mean_line(data_array):
 
     return mean_values
 
-def average_difference_within_condition(data, scope, condition='Free'):
+
+def average_within_condition(data, scope, condition=CONDITIONS[3]):
     average_trend = [0] * len(data[0][scope])
     for d in data:
-        if d["condition"] == condition and not math.isnan(d[scope][0]):
-            average_trend = [(g+h) for g, h in zip (d[scope], average_trend)]
+        if (d["condition"] == condition or condition == CONDITIONS[3]) and not math.isnan(d[scope][0]):
+            average_trend = [(g+h) for g, h in zip(d[scope], average_trend)]
     average_trend = [x / len(data) for x in average_trend]
     result = {
         "average_trend": average_trend,
@@ -131,9 +130,8 @@ def average_difference_within_condition(data, scope, condition='Free'):
     }
     return result
 
+
 def split_single_colunm(n):
-    if not n%2 == 0: n+=1
-    arr = [n // 2 + (1 if x < n % 2 else 0)  for x in range (2)]
-    col = arr[0]
-    row = arr[1]
+    col = math.ceil(math.sqrt(n))
+    row = math.ceil(n/col)
     return row, col
