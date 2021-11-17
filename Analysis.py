@@ -48,8 +48,8 @@ def predecision_raw_plot(data):
 
 
 def scatter_plot_mean():
-    # file = "ExpData/V2/M25_5.dat"
-    file = "ExpData/V2/M31_6.dat"
+    file = "ExpData/V2/M25_5.dat"
+    # file = "ExpData/V2/M31_6.dat"
     scope = Utilities.Trial_Data.decision_phase
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
     feedbackCondition = 1
@@ -66,14 +66,14 @@ def scatter_plot_mean():
 
 
 def delta_plot():
-    # file = "ExpData/V2/M25_5.dat"
-    file = "ExpData/V2/M31_6.dat"
+    file = "ExpData/V2/M25_5.dat"
+    # file = "ExpData/V2/M31_6.dat"
     scope = Utilities.Trial_Data.decision_phase
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
     search_from = 0
     count = 3
-    feedbackCondition = 1
-    condition = 2
+    feedbackCondition = 0
+    condition = 1
     threshold = 0.005
     data = json.load(open(file))
     extracted = Utilities.extract_data(
@@ -143,7 +143,7 @@ def single_subject_plot_within_condition():
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
     search_from = 0
     count = 30
-    feedbackCondition = 1
+    feedbackCondition = 0
     condition = 3
     i = 1
     data = json.load(open(file))

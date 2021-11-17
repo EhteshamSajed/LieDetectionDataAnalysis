@@ -22,7 +22,7 @@ class Trial_Data(enum.Enum):
 
 CONDITIONS = ['Free', 'True', 'Lie', 'All']
 ANSWERES = ['Any', 'True', 'False']
-DECISION_PHASE = 120  # 2 seconds
+DECISION_PHASE = 180  # 2 seconds
 START_FRAME = 30
 
 
