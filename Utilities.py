@@ -24,6 +24,7 @@ CONDITIONS = ['Free', 'True', 'Lie', 'All']
 ANSWERES = ['Any', 'True', 'False']
 DECISION_PHASE = 180  # 2 seconds
 START_FRAME = 30
+# POST_DECISION_PHASE = 60
 
 
 def extract_data(data, search_from=0, count=30, feedbackCondition=0, participantAnswer=1, condition_index=3):

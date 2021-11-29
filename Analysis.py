@@ -137,8 +137,12 @@ def average_within_condition():
 
 
 def single_subject_plot_within_condition():
-    file = "ExpData/V2/M25_5.dat"
+    # file = "ExpData/V2/M25_5.dat"
     # file = "ExpData/V2/M31_6.dat"
+    # file = "ExpData/V2/M28_7.dat"
+    # file = "ExpData/V2/F22_8.dat"
+    # file = "ExpData/V2/F21_9.dat"
+    file = "ExpData/V2/M26_10.dat"
     scope = Utilities.Trial_Data.decision_phase
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
     search_from = 0
