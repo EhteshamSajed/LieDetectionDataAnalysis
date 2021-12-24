@@ -109,12 +109,12 @@ def delta_plot():
 
 
 def average_within_condition():
-    experiment_files = ["ExpData/M33_4.dat", "testFiles/sampleJson.dat",
-                        "testFiles/sampleJson2.dat", "ExpData/M27_3.dat", "ExpData/M31_2.dat"]
+    # experiment_files = ["ExpData/M33_4.dat", "testFiles/sampleJson.dat",
+                        # "testFiles/sampleJson2.dat", "ExpData/M27_3.dat", "ExpData/M31_2.dat"]
     # experiment_files = ["ExpData/V2/M25_5.dat"]
     # experiment_files = ["ExpData/V2/M31_6.dat"]
-    # experiment_files = ["ExpData/V2/M25_5.dat", "ExpData/V2/M31_6.dat"]
-    scope = Utilities.Trial_Data.decision_phase
+    experiment_files = ["ExpData/V2/M25_5.dat", "ExpData/V2/M31_6.dat", "ExpData/V2/M28_7.dat", "ExpData/V2/F22_8.dat"]
+    scope = Utilities.Trial_Data.baseline_difference_decision_phase
     row, col = Utilities.split_single_colunm(len(experiment_files))
     feedbackCondition = 1
     condition_index = 2
@@ -129,7 +129,8 @@ def average_within_condition():
         average_trend = Utilities.average_within_condition(
             extracted, scope.name, condition)
         pyplot.subplot(row, col, i)
-        pyplot.plot(average_trend["average_trend"])
+        pyplot.plot(average_trend["average_trend"], label=data["participantName"])
+        pyplot.legend()
         i += 1
     pyplot.suptitle("Average of all " + condition +
                     " for different subjects. Feedback: " + str(feedbackCondition))
@@ -142,9 +143,10 @@ def single_subject_plot_within_condition():
     # file = "ExpData/V2/M28_7.dat"
     # file = "ExpData/V2/F22_8.dat"
     # file = "ExpData/V2/F21_9.dat"
-    file = "ExpData/V2/M26_10.dat"
-    scope = Utilities.Trial_Data.decision_phase
-    # scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    # file = "ExpData/V2/M26_10.dat"
+    file = "ExpData/V2/M31_11.dat"
+    # scope = Utilities.Trial_Data.decision_phase
+    scope = Utilities.Trial_Data.baseline_difference_decision_phase
     search_from = 0
     count = 30
     feedbackCondition = 0
@@ -160,7 +162,7 @@ def single_subject_plot_within_condition():
                     ":" + d[Utilities.Trial_Data.condition.name])
         pyplot.legend()
         i += 1
-    pyplot.suptitle("Single subject. Start index: " + str(search_from) + ", Ans Con " + Utilities.CONDITIONS[condition] +
+    pyplot.suptitle(data["participantName"] + ". Start index: " + str(search_from) + ", Ans Con " + Utilities.CONDITIONS[condition] +
                     ". Feedback: " + str(feedbackCondition))
     pyplot.show()
 
@@ -193,9 +195,9 @@ def showZeroedOutliers():
     pyplot.show()
 
 
-# average_within_condition()
+average_within_condition()
 # unit_data_comparison()
 # showZeroedOutliers()
 # scatter_plot_mean()
 # delta_plot()
-single_subject_plot_within_condition()
+# single_subject_plot_within_condition()

@@ -22,7 +22,7 @@ class Trial_Data(enum.Enum):
 
 CONDITIONS = ['Free', 'True', 'Lie', 'All']
 ANSWERES = ['Any', 'True', 'False']
-DECISION_PHASE = 180  # 2 seconds
+DECISION_PHASE = 120  # 2 seconds
 START_FRAME = 30
 # POST_DECISION_PHASE = 60
 
@@ -120,9 +120,10 @@ def get_mean_line(data_array):
 
 
 def average_within_condition(data, scope, condition=CONDITIONS[3]):
-    average_trend = [0] * len(data[0][scope])
+    average_trend = [0] * max([len(d[scope]) for d in data])
+    # average_trend = [0] * len(data[0][scope])
     for d in data:
-        if (d["condition"] == condition or condition == CONDITIONS[3]) and not math.isnan(d[scope][0]):
+        if (d["condition"] == condition or condition == CONDITIONS[3]) and not math.isnan(d[scope][0]) and len(d[scope]) >= DECISION_PHASE:
             average_trend = [(g+h) for g, h in zip(d[scope], average_trend)]
     average_trend = [x / len(data) for x in average_trend]
     result = {
