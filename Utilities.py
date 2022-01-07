@@ -18,6 +18,7 @@ class Trial_Data(enum.Enum):
     baseline_difference = 8
     baseline_difference_decision_phase = 9
     label_suffix = 10
+    elapse_ticks_to_answer = 11
 
 
 CONDITIONS = ['Free', 'True', 'Lie', 'All']
@@ -25,7 +26,7 @@ ANSWERES = ['Any', 'True', 'False']
 DECISION_PHASE = 120  # 2 seconds
 START_FRAME = 30
 # POST_DECISION_PHASE = 60
-
+DECISION_PHASE_TICKS = DECISION_PHASE * 10000000/60
 
 def extract_data(data, search_from=0, count=30, feedbackCondition=0, participantAnswer=1, condition_index=3):
     pupilDataTrials = data['trials'][feedbackCondition]['pupilDataTrials']
@@ -56,7 +57,8 @@ def extract_data(data, search_from=0, count=30, feedbackCondition=0, participant
                     Trial_Data.initial_decision_phase.name: get_initial_decision_phase(smoothed),
                     Trial_Data.baseline_difference.name: [x - bs_mean for x in smoothed],
                     Trial_Data.baseline_difference_decision_phase.name: [
-                        x - bs_mean for x in get_predecision_phase(smoothed, marker)]
+                        x - bs_mean for x in get_predecision_phase(smoothed, marker)],
+                    Trial_Data.elapse_ticks_to_answer.name: str(pupil_data_trial['elapseTicksToAnswer'])
                 }
                 extracted.append(trial)
                 count -= 1
@@ -123,7 +125,8 @@ def average_within_condition(data, scope, condition=CONDITIONS[3]):
     average_trend = [0] * max([len(d[scope]) for d in data])
     # average_trend = [0] * len(data[0][scope])
     for d in data:
-        if (d["condition"] == condition or condition == CONDITIONS[3]) and not math.isnan(d[scope][0]) and len(d[scope]) >= DECISION_PHASE:
+        # if (d["condition"] == condition or condition == CONDITIONS[3]) and not math.isnan(d[scope][0]) and len(d[scope]) >= DECISION_PHASE:
+        if (d["condition"] == condition or condition == CONDITIONS[3]) and not isnan(d[scope]) and int(d[Trial_Data.elapse_ticks_to_answer.name]) >= int(DECISION_PHASE_TICKS):
             average_trend = [(g+h) for g, h in zip(d[scope], average_trend)]
     average_trend = [x / len(data) for x in average_trend]
     result = {
@@ -132,6 +135,12 @@ def average_within_condition(data, scope, condition=CONDITIONS[3]):
     }
     return result
 
+
+def isnan(list):
+    for item in list:
+        if (math.isnan(item)):
+            return True
+    return False
 
 def split_single_colunm(n):
     col = math.ceil(math.sqrt(n))

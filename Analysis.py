@@ -5,6 +5,7 @@ import numpy as np
 import statistics
 import Utilities
 import OutlierDetector
+from os import listdir
 
 
 def generic_normalized_plot(data_array):
@@ -108,13 +109,15 @@ def delta_plot():
 #     pyplot.show()
 
 
-def average_within_condition():
+def single_subject_average_within_condition():
     # experiment_files = ["ExpData/M33_4.dat", "testFiles/sampleJson.dat",
-                        # "testFiles/sampleJson2.dat", "ExpData/M27_3.dat", "ExpData/M31_2.dat"]
+    # "testFiles/sampleJson2.dat", "ExpData/M27_3.dat", "ExpData/M31_2.dat"]
     # experiment_files = ["ExpData/V2/M25_5.dat"]
-    # experiment_files = ["ExpData/V2/M31_6.dat"]
-    experiment_files = ["ExpData/V2/M25_5.dat", "ExpData/V2/M31_6.dat", "ExpData/V2/M28_7.dat", "ExpData/V2/F22_8.dat"]
+    # experiment_files = ["ExpData/V2/F24_13.dat"]
+    experiment_files = ["ExpData/V2/M25_5.dat", "ExpData/V2/M31_6.dat",
+                        "ExpData/V2/M28_7.dat", "ExpData/V2/F22_8.dat"]
     scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    # scope = Utilities.Trial_Data.decision_phase
     row, col = Utilities.split_single_colunm(len(experiment_files))
     feedbackCondition = 1
     condition_index = 2
@@ -128,12 +131,44 @@ def average_within_condition():
             data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0, condition_index=condition_index)
         average_trend = Utilities.average_within_condition(
             extracted, scope.name, condition)
+        # print (average_trend["average_trend"])
         pyplot.subplot(row, col, i)
-        pyplot.plot(average_trend["average_trend"], label=data["participantName"])
+        pyplot.plot(average_trend["average_trend"],
+                    label=data["participantName"])
         pyplot.legend()
         i += 1
     pyplot.suptitle("Average of all " + condition +
                     " for different subjects. Feedback: " + str(feedbackCondition))
+    pyplot.show()
+
+
+def average_within_condition():
+    experiment_files = listdir("ExpData/V2/")
+    scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    feedbackCondition = 1
+    condition_index = 2
+    search_from = 0
+    count = 30
+    condition = Utilities.CONDITIONS[condition_index]
+    i = 0
+    average_trend = []
+    for file in experiment_files:
+        data = json.load(open("ExpData/V2/" + file))
+        extracted = Utilities.extract_data(
+            data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0, condition_index=condition_index)
+        if len(average_trend) == 0:
+            average_trend = Utilities.average_within_condition(
+                extracted, scope.name, condition)["average_trend"]
+        else:
+            average_trend = [(x + y)/2 for x, y in zip(average_trend,
+                                                       Utilities.average_within_condition(
+                                                           extracted, scope.name, condition)["average_trend"])]
+        i += 1
+    pyplot.plot(average_trend)
+    # pyplot.legend()
+
+    # pyplot.suptitle("Average of all " + condition +
+    # " for different subjects. Feedback: " + str(feedbackCondition))
     pyplot.show()
 
 
@@ -195,7 +230,8 @@ def showZeroedOutliers():
     pyplot.show()
 
 
-average_within_condition()
+single_subject_average_within_condition()
+# average_within_condition()
 # unit_data_comparison()
 # showZeroedOutliers()
 # scatter_plot_mean()
