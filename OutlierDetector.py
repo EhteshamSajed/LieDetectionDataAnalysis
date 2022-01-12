@@ -62,5 +62,5 @@ def relative_position_on_removed_outiler(filtered_value_list, original_position)
 def linear_interpolate(value_list):
     value_list = np.array(value_list)
     value_list = np.where(value_list==0 , np.nan, value_list)
-    return pd.Series(value_list).interpolate().array
+    return pd.Series(value_list).interpolate().dropna().array
     

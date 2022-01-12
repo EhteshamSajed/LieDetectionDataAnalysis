@@ -6,6 +6,7 @@ import statistics
 import Utilities
 import OutlierDetector
 from os import listdir
+import Smoother
 
 
 def generic_normalized_plot(data_array):
@@ -143,17 +144,18 @@ def single_subject_average_within_condition():
 
 
 def average_within_condition():
-    experiment_files = listdir("ExpData/V2/")
+    dir = "ExpData/V2/"
+    experiment_files = listdir(dir)
     scope = Utilities.Trial_Data.baseline_difference_decision_phase
     feedbackCondition = 1
-    condition_index = 2
+    condition_index = 0
     search_from = 0
     count = 30
     condition = Utilities.CONDITIONS[condition_index]
     i = 0
     average_trend = []
     for file in experiment_files:
-        data = json.load(open("ExpData/V2/" + file))
+        data = json.load(open(dir + file))
         extracted = Utilities.extract_data(
             data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0, condition_index=condition_index)
         if len(average_trend) == 0:
@@ -167,8 +169,7 @@ def average_within_condition():
     pyplot.plot(average_trend)
     # pyplot.legend()
 
-    # pyplot.suptitle("Average of all " + condition +
-    # " for different subjects. Feedback: " + str(feedbackCondition))
+    pyplot.suptitle("Average of all " + condition + " for all subjects. Feedback: " + str(feedbackCondition))
     pyplot.show()
 
 
@@ -178,10 +179,12 @@ def single_subject_plot_within_condition():
     # file = "ExpData/V2/M28_7.dat"
     # file = "ExpData/V2/F22_8.dat"
     # file = "ExpData/V2/F21_9.dat"
-    # file = "ExpData/V2/M26_10.dat"
-    file = "ExpData/V2/M31_11.dat"
+    file = "ExpData/V2/M26_10.dat"
+    # file = "ExpData/V2/M31_11.dat"
     # scope = Utilities.Trial_Data.decision_phase
     scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    # scope = Utilities.Trial_Data.smoothed
+    # scope = Utilities.Trial_Data.removed_ouliers
     search_from = 0
     count = 30
     feedbackCondition = 0
@@ -191,6 +194,7 @@ def single_subject_plot_within_condition():
     extracted = Utilities.extract_data(
         data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0, condition_index=condition)
     row, col = Utilities.split_single_colunm(len(extracted))
+    # print (extracted[0][scope.name])
     for d in extracted:
         pyplot.subplot(row, col, i)
         pyplot.plot(d[scope.name], label=d[Utilities.Trial_Data.label_suffix.name] +
@@ -230,10 +234,35 @@ def showZeroedOutliers():
     pyplot.show()
 
 
-single_subject_average_within_condition()
+def plot_baseline():
+    dir = "ExpData/V2/"
+    experiment_files = listdir(dir)
+    # experiment_files = ["F23_15.dat"]
+    row, col = Utilities.split_single_colunm(len(experiment_files))
+    feedbackCondition = 0
+    i = 1
+    for file in experiment_files:
+        data = json.load(open(dir + file))
+        pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter'][Utilities.START_FRAME:]
+        print (pupilDiameter)
+        removed_ouliers = OutlierDetector.remove_outliers(
+                    pupilDiameter, True)
+        print (removed_ouliers)
+        smoothed = Smoother.smooth(removed_ouliers, 10, True)
+        print (smoothed)
+        pyplot.subplot(row, col, i)
+        pyplot.plot(smoothed,
+                    label=data["participantName"])
+        pyplot.legend()
+        i += 1
+    pyplot.suptitle("All smoothed Baseline. Feedback: " + str(feedbackCondition))
+    pyplot.show()
+
+# single_subject_average_within_condition()
 # average_within_condition()
 # unit_data_comparison()
 # showZeroedOutliers()
 # scatter_plot_mean()
 # delta_plot()
-# single_subject_plot_within_condition()
+single_subject_plot_within_condition()
+# plot_baseline()

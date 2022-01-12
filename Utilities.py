@@ -37,7 +37,7 @@ def extract_data(data, search_from=0, count=30, feedbackCondition=0, participant
         if pupil_data_trial['participantAnswer'] != 0 and (condition_index == 3 or condition_index == pupil_data_trial['question']['condition']):
             if assess_participants_answer(pupil_data_trial, ANSWERES[participantAnswer]):
                 removed_ouliers = OutlierDetector.remove_outliers(
-                    pupil_data_trial['pupilDiameter'], True)
+                    pupil_data_trial['pupilDiameter'][START_FRAME:], True)
                 markerPos = []
                 markerPos.append(OutlierDetector.relative_position_on_removed_outiler(
                     removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60)))
@@ -86,7 +86,7 @@ def assess_participants_answer(pupil_data_trial, expected_answer):
 
 
 def calculate_baseline_mean(data, feedbackCondition=0):
-    pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter']
+    pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter'][START_FRAME:]
     return statistics.mean(pupilDiameter)
 
 
@@ -98,7 +98,8 @@ def get_predecision_phase(trial, marker):
 
 
 def get_initial_decision_phase(trial):
-    return trial[START_FRAME: START_FRAME + DECISION_PHASE]
+    # return trial[START_FRAME: START_FRAME + DECISION_PHASE]
+    return trial[0: DECISION_PHASE]     #start_frame is calculated globally
 
 
 def get_normalized_data(data_array):
