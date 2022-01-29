@@ -19,13 +19,14 @@ class Trial_Data(enum.Enum):
     baseline_difference_decision_phase = 9
     label_suffix = 10
     elapse_ticks_to_answer = 11
+    post_decision_phase = 12
 
 
 CONDITIONS = ['Free', 'True', 'Lie', 'All']
 ANSWERES = ['Any', 'True', 'False']
 DECISION_PHASE = 120  # 2 seconds
 START_FRAME = 30
-# POST_DECISION_PHASE = 60
+POST_DECISION_PHASE = 60
 DECISION_PHASE_TICKS = DECISION_PHASE * 10000000/60
 
 def extract_data(data, search_from=0, count=30, feedbackCondition=0, participantAnswer=1, condition_index=3):
@@ -58,7 +59,8 @@ def extract_data(data, search_from=0, count=30, feedbackCondition=0, participant
                     Trial_Data.baseline_difference.name: [x - bs_mean for x in smoothed],
                     Trial_Data.baseline_difference_decision_phase.name: [
                         x - bs_mean for x in get_predecision_phase(smoothed, marker)],
-                    Trial_Data.elapse_ticks_to_answer.name: str(pupil_data_trial['elapseTicksToAnswer'])
+                    Trial_Data.elapse_ticks_to_answer.name: str(pupil_data_trial['elapseTicksToAnswer']),
+                    Trial_Data.post_decision_phase.name: get_postdecision_phase(smoothed, marker)
                 }
                 extracted.append(trial)
                 count -= 1
@@ -86,7 +88,8 @@ def assess_participants_answer(pupil_data_trial, expected_answer):
 
 
 def calculate_baseline_mean(data, feedbackCondition=0):
-    pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter'][START_FRAME:]
+    n = 60              # last n diameters within the list.
+    pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter'][-n:]
     return statistics.mean(pupilDiameter)
 
 
@@ -96,6 +99,11 @@ def get_predecision_phase(trial, marker):
     else:
         return trial[0:marker]
 
+def get_postdecision_phase(trial, marker):
+    if marker + POST_DECISION_PHASE < len (trial):
+        return trial[marker: marker + POST_DECISION_PHASE]
+    else:
+        return trial[marker:]
 
 def get_initial_decision_phase(trial):
     # return trial[START_FRAME: START_FRAME + DECISION_PHASE]

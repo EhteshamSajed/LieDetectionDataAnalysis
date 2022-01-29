@@ -120,8 +120,8 @@ def single_subject_average_within_condition():
     scope = Utilities.Trial_Data.baseline_difference_decision_phase
     # scope = Utilities.Trial_Data.decision_phase
     row, col = Utilities.split_single_colunm(len(experiment_files))
-    feedbackCondition = 1
-    condition_index = 2
+    feedbackCondition = 0
+    condition_index = 1
     search_from = 0
     count = 30
     condition = Utilities.CONDITIONS[condition_index]
@@ -147,8 +147,8 @@ def average_within_condition():
     dir = "ExpData/V2/"
     experiment_files = listdir(dir)
     scope = Utilities.Trial_Data.baseline_difference_decision_phase
-    feedbackCondition = 1
-    condition_index = 0
+    feedbackCondition = 0
+    condition_index = 2
     search_from = 0
     count = 30
     condition = Utilities.CONDITIONS[condition_index]
@@ -181,8 +181,8 @@ def single_subject_plot_within_condition():
     # file = "ExpData/V2/F21_9.dat"
     file = "ExpData/V2/M26_10.dat"
     # file = "ExpData/V2/M31_11.dat"
-    # scope = Utilities.Trial_Data.decision_phase
-    scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    scope = Utilities.Trial_Data.decision_phase
+    # scope = Utilities.Trial_Data.baseline_difference_decision_phase
     # scope = Utilities.Trial_Data.smoothed
     # scope = Utilities.Trial_Data.removed_ouliers
     search_from = 0
@@ -205,6 +205,30 @@ def single_subject_plot_within_condition():
                     ". Feedback: " + str(feedbackCondition))
     pyplot.show()
 
+
+def single_subject_dynamic_difference():
+    file = "ExpData/V2/M26_10.dat"
+    # file = "ExpData/V2/M31_11.dat"
+    scope = Utilities.Trial_Data.decision_phase
+    search_from = 0
+    count = 30
+    feedbackCondition = 0
+    condition = 3
+    i = 1
+    data = json.load(open(file))
+    extracted = Utilities.extract_data(
+        data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0, condition_index=condition)
+    row, col = Utilities.split_single_colunm(len(extracted))
+    for d in extracted:
+        pyplot.subplot(row, col, i)
+        pyplot.plot(d[Utilities.Trial_Data.decision_phase.name] + d[Utilities.Trial_Data.post_decision_phase.name],
+                '-D', markevery=[len(d[Utilities.Trial_Data.decision_phase.name])], label=d[Utilities.Trial_Data.label_suffix.name] +
+                    ":" + d[Utilities.Trial_Data.condition.name])
+        pyplot.legend()
+        i += 1
+    pyplot.suptitle(data["participantName"] + ". Start index: " + str(search_from) + ", Ans Con " + Utilities.CONDITIONS[condition] +
+                    ". Feedback: " + str(feedbackCondition))
+    pyplot.show()
 
 def unit_data_comparison():
     file = "ExpData/M33_4.dat"
@@ -264,5 +288,6 @@ def plot_baseline():
 # showZeroedOutliers()
 # scatter_plot_mean()
 # delta_plot()
-single_subject_plot_within_condition()
+# single_subject_plot_within_condition()
+single_subject_dynamic_difference()
 # plot_baseline()
