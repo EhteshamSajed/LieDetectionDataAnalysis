@@ -22,6 +22,11 @@ class Trial_Data(enum.Enum):
     post_decision_phase = 12
 
 
+class Baseline_Source(enum.Enum):
+    baseline = 1
+    preceding_trial = 2
+
+
 CONDITIONS = ['Free', 'True', 'Lie', 'All']
 ANSWERES = ['Any', 'True', 'False']
 DECISION_PHASE = 120  # 2 seconds
@@ -29,14 +34,19 @@ START_FRAME = 30
 POST_DECISION_PHASE = 60
 DECISION_PHASE_TICKS = DECISION_PHASE * 10000000/60
 
-def extract_data(data, search_from=0, count=30, feedbackCondition=0, participantAnswer=1, condition_index=3):
+bs_mean = -1  # uninitialised baseline
+
+
+def extract_data(data, search_from=0, count=30, feedbackCondition=0, participantAnswer=1, condition_index=3, baseline_source=Baseline_Source.baseline):
     pupilDataTrials = data['trials'][feedbackCondition]['pupilDataTrials']
-    bs_mean = calculate_baseline_mean(data, feedbackCondition)
+    # bs_mean = calculate_baseline_mean(data, feedbackCondition)
     extracted = []
     while (search_from < len(pupilDataTrials) and count > 0):
         pupil_data_trial = pupilDataTrials[search_from]
         if pupil_data_trial['participantAnswer'] != 0 and (condition_index == 3 or condition_index == pupil_data_trial['question']['condition']):
             if assess_participants_answer(pupil_data_trial, ANSWERES[participantAnswer]):
+                bs_mean = calculate_baseline_mean(data, feedbackCondition,
+                                                  index=search_from, baseline_source=baseline_source)
                 removed_ouliers = OutlierDetector.remove_outliers(
                     pupil_data_trial['pupilDiameter'][START_FRAME:], True)
                 markerPos = []
@@ -60,7 +70,8 @@ def extract_data(data, search_from=0, count=30, feedbackCondition=0, participant
                     Trial_Data.baseline_difference_decision_phase.name: [
                         x - bs_mean for x in get_predecision_phase(smoothed, marker)],
                     Trial_Data.elapse_ticks_to_answer.name: str(pupil_data_trial['elapseTicksToAnswer']),
-                    Trial_Data.post_decision_phase.name: get_postdecision_phase(smoothed, marker)
+                    Trial_Data.post_decision_phase.name: get_postdecision_phase(
+                        smoothed, marker)
                 }
                 extracted.append(trial)
                 count -= 1
@@ -87,10 +98,20 @@ def assess_participants_answer(pupil_data_trial, expected_answer):
             return real_answer != participant_answer
 
 
-def calculate_baseline_mean(data, feedbackCondition=0):
+def calculate_baseline_mean(data, feedbackCondition=0, baseline_source=Baseline_Source.baseline, index=0):
+    global bs_mean
     n = 60              # last n diameters within the list.
-    pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter'][-n:]
-    return statistics.mean(pupilDiameter)
+    if baseline_source == Baseline_Source.baseline:
+        if bs_mean == -1:
+            pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter'][-n:]
+            bs_mean = statistics.mean(pupilDiameter)
+    elif baseline_source == Baseline_Source.preceding_trial:
+        if index == 0:
+            bs_mean = calculate_baseline_mean(data, feedbackCondition, baseline_source=Baseline_Source.baseline)
+        else:
+            pupilDiameter = data['trials'][feedbackCondition]['pupilDataTrials'][index-1]['pupilDiameter'][-n:]
+            bs_mean = statistics.mean(pupilDiameter)
+    return bs_mean
 
 
 def get_predecision_phase(trial, marker):
@@ -99,15 +120,17 @@ def get_predecision_phase(trial, marker):
     else:
         return trial[0:marker]
 
+
 def get_postdecision_phase(trial, marker):
-    if marker + POST_DECISION_PHASE < len (trial):
+    if marker + POST_DECISION_PHASE < len(trial):
         return trial[marker: marker + POST_DECISION_PHASE]
     else:
         return trial[marker:]
 
+
 def get_initial_decision_phase(trial):
     # return trial[START_FRAME: START_FRAME + DECISION_PHASE]
-    return trial[0: DECISION_PHASE]     #start_frame is calculated globally
+    return trial[0: DECISION_PHASE]  # start_frame is calculated globally
 
 
 def get_normalized_data(data_array):
@@ -129,15 +152,36 @@ def get_mean_line(data_array):
 
     return mean_values
 
-
 def average_within_condition(data, scope, condition=CONDITIONS[3]):
     average_trend = [0] * max([len(d[scope]) for d in data])
+    average_elapsed_ticks_to_answer = 0
+    # average_trend = [0] * len(data[0][scope])
+    for d in data:
+        if (d["condition"] == condition or condition == CONDITIONS[3]) and not isnan(d[scope]):
+            average_trend = [(g+h) for g, h in zip(d[scope], average_trend)]
+            average_elapsed_ticks_to_answer += int(d[Trial_Data.elapse_ticks_to_answer.name])
+    average_trend = [x / len(data) for x in average_trend]
+    average_elapsed_ticks_to_answer = average_elapsed_ticks_to_answer / len(data)
+    # average_trend = [x / len(data) for x in average_trend]
+    # average_elapsed_ticks_to_answer = average_elapsed_ticks_to_answer / len(data)
+    result = {
+        "average_trend": average_trend,
+        "average_elapsed_ticks_to_answer": average_elapsed_ticks_to_answer,
+        "legend": condition
+    }
+    return result
+
+def average_within_condition_within_decision_phase(data, scope, condition=CONDITIONS[3]):
+    average_trend = [0] * max([len(d[scope]) for d in data])
+    count = 0
     # average_trend = [0] * len(data[0][scope])
     for d in data:
         # if (d["condition"] == condition or condition == CONDITIONS[3]) and not math.isnan(d[scope][0]) and len(d[scope]) >= DECISION_PHASE:
         if (d["condition"] == condition or condition == CONDITIONS[3]) and not isnan(d[scope]) and int(d[Trial_Data.elapse_ticks_to_answer.name]) >= int(DECISION_PHASE_TICKS):
             average_trend = [(g+h) for g, h in zip(d[scope], average_trend)]
-    average_trend = [x / len(data) for x in average_trend]
+            count += 1
+    average_trend = [x / count for x in average_trend]
+    # average_trend = [x / len(data) for x in average_trend]
     result = {
         "average_trend": average_trend,
         "legend": condition
@@ -150,6 +194,7 @@ def isnan(list):
         if (math.isnan(item)):
             return True
     return False
+
 
 def split_single_colunm(n):
     col = math.ceil(math.sqrt(n))

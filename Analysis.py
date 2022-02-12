@@ -117,11 +117,12 @@ def single_subject_average_within_condition():
     # experiment_files = ["ExpData/V2/F24_13.dat"]
     experiment_files = ["ExpData/V2/M25_5.dat", "ExpData/V2/M31_6.dat",
                         "ExpData/V2/M28_7.dat", "ExpData/V2/F22_8.dat"]
-    scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    scope = Utilities.Trial_Data.baseline_difference
+    # scope = Utilities.Trial_Data.baseline_difference_decision_phase
     # scope = Utilities.Trial_Data.decision_phase
     row, col = Utilities.split_single_colunm(len(experiment_files))
     feedbackCondition = 0
-    condition_index = 1
+    condition_index = 0
     search_from = 0
     count = 30
     condition = Utilities.CONDITIONS[condition_index]
@@ -129,13 +130,15 @@ def single_subject_average_within_condition():
     for file in experiment_files:
         data = json.load(open(file))
         extracted = Utilities.extract_data(
-            data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0, condition_index=condition_index)
+            data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, 
+            participantAnswer=0, condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial)
         average_trend = Utilities.average_within_condition(
             extracted, scope.name, condition)
         # print (average_trend["average_trend"])
         pyplot.subplot(row, col, i)
-        pyplot.plot(average_trend["average_trend"],
-                    label=data["participantName"])
+        # pyplot.plot(average_trend["average_trend"], label=data["participantName"])
+        pyplot.plot(average_trend["average_trend"], '-D', label=data["participantName"], 
+                    markevery = [int (average_trend["average_elapsed_ticks_to_answer"]/10000000 * 60)])
         pyplot.legend()
         i += 1
     pyplot.suptitle("Average of all " + condition +
@@ -146,7 +149,8 @@ def single_subject_average_within_condition():
 def average_within_condition():
     dir = "ExpData/V2/"
     experiment_files = listdir(dir)
-    scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    scope = Utilities.Trial_Data.baseline_difference
+    # scope = Utilities.Trial_Data.baseline_difference_decision_phase
     feedbackCondition = 0
     condition_index = 2
     search_from = 0
@@ -154,19 +158,24 @@ def average_within_condition():
     condition = Utilities.CONDITIONS[condition_index]
     i = 0
     average_trend = []
+    average_response_time = 0;
     for file in experiment_files:
         data = json.load(open(dir + file))
         extracted = Utilities.extract_data(
-            data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0, condition_index=condition_index)
+            data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0,
+                condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial
+        )
+        average_within_condition = Utilities.average_within_condition(
+                extracted, scope.name, condition)
+        average_response_time += average_within_condition["average_elapsed_ticks_to_answer"]
         if len(average_trend) == 0:
-            average_trend = Utilities.average_within_condition(
-                extracted, scope.name, condition)["average_trend"]
+            average_trend = average_within_condition["average_trend"]
         else:
             average_trend = [(x + y)/2 for x, y in zip(average_trend,
-                                                       Utilities.average_within_condition(
-                                                           extracted, scope.name, condition)["average_trend"])]
+                                                       average_within_condition["average_trend"])]
         i += 1
-    pyplot.plot(average_trend)
+    average_response_time = (average_response_time/i) / 10000000 * 60
+    pyplot.plot(average_trend, '-D', markevery = [int (average_response_time)])
     # pyplot.legend()
 
     pyplot.suptitle("Average of all " + condition + " for all subjects. Feedback: " + str(feedbackCondition))
@@ -179,10 +188,10 @@ def single_subject_plot_within_condition():
     # file = "ExpData/V2/M28_7.dat"
     # file = "ExpData/V2/F22_8.dat"
     # file = "ExpData/V2/F21_9.dat"
-    file = "ExpData/V2/M26_10.dat"
-    # file = "ExpData/V2/M31_11.dat"
-    scope = Utilities.Trial_Data.decision_phase
-    # scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    # file = "ExpData/V2/M26_10.dat"
+    file = "ExpData/V2/M31_11.dat"
+    # scope = Utilities.Trial_Data.decision_phase
+    scope = Utilities.Trial_Data.baseline_difference_decision_phase
     # scope = Utilities.Trial_Data.smoothed
     # scope = Utilities.Trial_Data.removed_ouliers
     search_from = 0
@@ -192,7 +201,8 @@ def single_subject_plot_within_condition():
     i = 1
     data = json.load(open(file))
     extracted = Utilities.extract_data(
-        data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0, condition_index=condition)
+        data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0, condition_index=condition,
+        baseline_source=Utilities.Baseline_Source.preceding_trial)
     row, col = Utilities.split_single_colunm(len(extracted))
     # print (extracted[0][scope.name])
     for d in extracted:
@@ -283,11 +293,11 @@ def plot_baseline():
     pyplot.show()
 
 # single_subject_average_within_condition()
-# average_within_condition()
+average_within_condition()
 # unit_data_comparison()
 # showZeroedOutliers()
 # scatter_plot_mean()
 # delta_plot()
 # single_subject_plot_within_condition()
-single_subject_dynamic_difference()
+# single_subject_dynamic_difference()
 # plot_baseline()
