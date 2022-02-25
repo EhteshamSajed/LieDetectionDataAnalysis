@@ -151,34 +151,38 @@ def average_within_condition():
     experiment_files = listdir(dir)
     scope = Utilities.Trial_Data.baseline_difference
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
-    feedbackCondition = 0
-    condition_index = 2
+    feedbackCondition = 1
+    # condition_index = 2
     search_from = 0
     count = 30
-    condition = Utilities.CONDITIONS[condition_index]
-    i = 0
-    average_trend = []
-    average_response_time = 0;
-    for file in experiment_files:
-        data = json.load(open(dir + file))
-        extracted = Utilities.extract_data(
-            data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0,
-                condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial
-        )
-        average_within_condition = Utilities.average_within_condition(
-                extracted, scope.name, condition)
-        average_response_time += average_within_condition["average_elapsed_ticks_to_answer"]
-        if len(average_trend) == 0:
-            average_trend = average_within_condition["average_trend"]
-        else:
-            average_trend = [(x + y)/2 for x, y in zip(average_trend,
-                                                       average_within_condition["average_trend"])]
-        i += 1
-    average_response_time = (average_response_time/i) / 10000000 * 60
-    pyplot.plot(average_trend, '-D', markevery = [int (average_response_time)])
-    # pyplot.legend()
+    conditions = [0, 1, 2]
+    # conditions = [0]
+    # condition = Utilities.CONDITIONS[condition_index]
+    for condition_index in conditions:
+        i = 0
+        condition = Utilities.CONDITIONS[condition_index]
+        average_trend = []
+        average_response_time = 0;
+        for file in experiment_files:
+            data = json.load(open(dir + file))
+            extracted = Utilities.extract_data(
+                data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0,
+                    condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial
+            )
+            average_within_condition = Utilities.average_within_condition(
+                    extracted, scope.name, condition)
+            average_response_time += average_within_condition["average_elapsed_ticks_to_answer"]
+            if len(average_trend) == 0:
+                average_trend = average_within_condition["average_trend"]
+            else:
+                average_trend = [(x + y)/2 for x, y in zip(average_trend,
+                                                        average_within_condition["average_trend"])]
+            i += 1
+        average_response_time = (average_response_time/i) / 10000000 * 60
+        pyplot.plot(average_trend, '-D', markevery = [int (average_response_time)], label=condition)
+    pyplot.legend()
 
-    pyplot.suptitle("Average of all " + condition + " for all subjects. Feedback: " + str(feedbackCondition))
+    pyplot.suptitle("Combined Average of all subjects. Feedback: " + str(feedbackCondition))
     pyplot.show()
 
 
