@@ -27,7 +27,7 @@ class Baseline_Source(enum.Enum):
     preceding_trial = 2
 
 
-CONDITIONS = ['Free', 'True', 'Lie', 'All']
+CONDITIONS = ['Free', 'True', 'Lie', 'All', 'Free_True', 'Free_Lie']
 ANSWERES = ['Any', 'True', 'False']
 DECISION_PHASE = 120  # 2 seconds
 START_FRAME = 30
@@ -66,7 +66,7 @@ def extract_data(data, search_from=0, count=30, feedbackCondition=0, participant
                     Trial_Data.decision_phase.name: get_predecision_phase(smoothed, marker),
                     # from start to n frames
                     Trial_Data.initial_decision_phase.name: get_initial_decision_phase(smoothed),
-                    Trial_Data.baseline_difference.name: [x - bs_mean for x in smoothed],
+                    Trial_Data.baseline_difference.name: [x - bs_mean for x in removed_ouliers],    # chnaged to removed_ouliers from smoothed
                     Trial_Data.baseline_difference_decision_phase.name: [
                         x - bs_mean for x in get_predecision_phase(smoothed, marker)],
                     Trial_Data.elapse_ticks_to_answer.name: str(pupil_data_trial['elapseTicksToAnswer']),

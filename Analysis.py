@@ -151,11 +151,11 @@ def average_within_condition():
     experiment_files = listdir(dir)
     scope = Utilities.Trial_Data.baseline_difference
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
-    feedbackCondition = 1
+    feedbackCondition = 0
     # condition_index = 2
     search_from = 0
     count = 30
-    conditions = [0, 1, 2]
+    conditions = [0, 2, 1]
     # conditions = [0]
     # condition = Utilities.CONDITIONS[condition_index]
     for condition_index in conditions:
@@ -179,7 +179,8 @@ def average_within_condition():
                                                         average_within_condition["average_trend"])]
             i += 1
         average_response_time = (average_response_time/i) / 10000000 * 60
-        pyplot.plot(average_trend, '-D', markevery = [int (average_response_time)], label=condition)
+        # pyplot.plot(average_trend , '-o', markevery = [int (average_response_time)], label=condition)
+        pyplot.plot(Smoother.smooth(average_trend, 10, True) , '-o', markevery = [int (average_response_time)], label=condition)
     pyplot.legend()
 
     pyplot.suptitle("Combined Average of all subjects. Feedback: " + str(feedbackCondition))
