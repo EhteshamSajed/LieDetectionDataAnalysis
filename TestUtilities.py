@@ -35,3 +35,11 @@ class TestSmoother (unittest.TestCase):
             extracted, Utilities.Trial_Data.smoothed.name, Utilities.CONDITIONS[condition_index])
         average_response_time = int (average_trend["average_elapsed_ticks_to_answer"]/10000000 * 60)
         self.assertEqual(220, average_response_time)
+
+    def test_assess_participants_answer(self):
+        data = json.load(open("testFiles/sampleJson.dat"))
+        pupilDataTrial = data['trials'][0]['pupilDataTrials'][1]    # free_true
+        self.assertEqual(True, Utilities.assess_participants_answer(pupilDataTrial, Utilities.ANSWERES[1]))
+
+        pupilDataTrial = data['trials'][0]['pupilDataTrials'][19]    # free_false
+        self.assertEqual(True, Utilities.assess_participants_answer(pupilDataTrial, Utilities.ANSWERES[2]))

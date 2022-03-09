@@ -43,41 +43,52 @@ def extract_data(data, search_from=0, count=30, feedbackCondition=0, participant
     extracted = []
     while (search_from < len(pupilDataTrials) and count > 0):
         pupil_data_trial = pupilDataTrials[search_from]
-        if pupil_data_trial['participantAnswer'] != 0 and (condition_index == 3 or condition_index == pupil_data_trial['question']['condition']):
-            if assess_participants_answer(pupil_data_trial, ANSWERES[participantAnswer]):
-                bs_mean = calculate_baseline_mean(data, feedbackCondition,
-                                                  index=search_from, baseline_source=baseline_source)
-                removed_ouliers = OutlierDetector.remove_outliers(
-                    pupil_data_trial['pupilDiameter'][START_FRAME:], True)
-                markerPos = []
-                markerPos.append(OutlierDetector.relative_position_on_removed_outiler(
-                    removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60)))
-                smoothed = Smoother.smooth(removed_ouliers, 10, True)
-                marker = OutlierDetector.relative_position_on_removed_outiler(
-                    removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60))
-                trial = {
-                    Trial_Data.raw.name: pupil_data_trial['pupilDiameter'],
-                    Trial_Data.removed_ouliers.name: removed_ouliers,
-                    Trial_Data.marker.name: marker,
-                    Trial_Data.smoothed.name: smoothed,
-                    Trial_Data.condition.name: CONDITIONS[pupil_data_trial['question']['condition']],
-                    Trial_Data.label_suffix.name: str(pupil_data_trial['stimuliId']),
-                    # from marker to preceeding n frames
-                    Trial_Data.decision_phase.name: get_predecision_phase(smoothed, marker),
-                    # from start to n frames
-                    Trial_Data.initial_decision_phase.name: get_initial_decision_phase(smoothed),
-                    Trial_Data.baseline_difference.name: [x - bs_mean for x in removed_ouliers],    # chnaged to removed_ouliers from smoothed
-                    Trial_Data.baseline_difference_decision_phase.name: [
-                        x - bs_mean for x in get_predecision_phase(smoothed, marker)],
-                    Trial_Data.elapse_ticks_to_answer.name: str(pupil_data_trial['elapseTicksToAnswer']),
-                    Trial_Data.post_decision_phase.name: get_postdecision_phase(
-                        smoothed, marker)
-                }
-                extracted.append(trial)
-                count -= 1
+        if filter_pupil_data_trial(pupil_data_trial, condition_index, participantAnswer):
+            bs_mean = calculate_baseline_mean(data, feedbackCondition,
+                                                index=search_from, baseline_source=baseline_source)
+            removed_ouliers = OutlierDetector.remove_outliers(
+                pupil_data_trial['pupilDiameter'][START_FRAME:], True)
+            markerPos = []
+            markerPos.append(OutlierDetector.relative_position_on_removed_outiler(
+                removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60)))
+            smoothed = Smoother.smooth(removed_ouliers, 10, True)
+            marker = OutlierDetector.relative_position_on_removed_outiler(
+                removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60))
+            trial = {
+                Trial_Data.raw.name: pupil_data_trial['pupilDiameter'],
+                Trial_Data.removed_ouliers.name: removed_ouliers,
+                Trial_Data.marker.name: marker,
+                Trial_Data.smoothed.name: smoothed,
+                Trial_Data.condition.name: CONDITIONS[pupil_data_trial['question']['condition']],
+                Trial_Data.label_suffix.name: str(pupil_data_trial['stimuliId']),
+                # from marker to preceeding n frames
+                Trial_Data.decision_phase.name: get_predecision_phase(smoothed, marker),
+                # from start to n frames
+                Trial_Data.initial_decision_phase.name: get_initial_decision_phase(smoothed),
+                Trial_Data.baseline_difference.name: [x - bs_mean for x in removed_ouliers],    # chnaged to removed_ouliers from smoothed
+                Trial_Data.baseline_difference_decision_phase.name: [
+                    x - bs_mean for x in get_predecision_phase(smoothed, marker)],
+                Trial_Data.elapse_ticks_to_answer.name: str(pupil_data_trial['elapseTicksToAnswer']),
+                Trial_Data.post_decision_phase.name: get_postdecision_phase(
+                    smoothed, marker)
+            }
+            extracted.append(trial)
+            count -= 1
         search_from += 1
     return extracted
 
+def filter_pupil_data_trial(pupil_data_trial, condition_index, participantAnswer):
+    if pupil_data_trial['participantAnswer'] != 0: 
+        if (condition_index == 3 or condition_index == pupil_data_trial['question']['condition']):
+            if assess_participants_answer(pupil_data_trial, ANSWERES[participantAnswer]):
+                return True
+        elif (condition_index == 4 and pupil_data_trial['question']['condition'] == 0):    # free true
+            if assess_participants_answer(pupil_data_trial, ANSWERES[1]):
+                return True
+        elif (condition_index == 5 and pupil_data_trial['question']['condition'] == 0):    # free lie
+            if assess_participants_answer(pupil_data_trial, ANSWERES[2]):
+                return True
+    return False
 
 def assess_participants_answer(pupil_data_trial, expected_answer):
     if expected_answer == ANSWERES[0]:
@@ -86,12 +97,12 @@ def assess_participants_answer(pupil_data_trial, expected_answer):
     if int(pupil_data_trial['question']['circleString']) > 10:
         real_answer = 1
     participant_answer = pupil_data_trial['participantAnswer']
-    if pupil_data_trial['question']['condition'] == 2:
+    if pupil_data_trial['question']['condition'] == 2:      # lie
         if expected_answer == ANSWERES[1]:
             return real_answer != participant_answer
         else:
             return real_answer == participant_answer
-    else:
+    else:                                                   # free and true
         if expected_answer == ANSWERES[1]:
             return real_answer == participant_answer
         else:
@@ -157,7 +168,7 @@ def average_within_condition(data, scope, condition=CONDITIONS[3]):
     average_elapsed_ticks_to_answer = 0
     # average_trend = [0] * len(data[0][scope])
     for d in data:
-        if (d["condition"] == condition or condition == CONDITIONS[3]) and not isnan(d[scope]):
+        if not isnan(d[scope]):
             average_trend = [(g+h) for g, h in zip(d[scope], average_trend)]
             average_elapsed_ticks_to_answer += int(d[Trial_Data.elapse_ticks_to_answer.name])
     average_trend = [x / len(data) for x in average_trend]
@@ -170,6 +181,25 @@ def average_within_condition(data, scope, condition=CONDITIONS[3]):
         "legend": condition
     }
     return result
+
+# def average_within_condition(data, scope, condition=CONDITIONS[3]):
+#     average_trend = [0] * max([len(d[scope]) for d in data])
+#     average_elapsed_ticks_to_answer = 0
+#     # average_trend = [0] * len(data[0][scope])
+#     for d in data:
+#         if (d["condition"] == condition or condition == CONDITIONS[3]) and not isnan(d[scope]):
+#             average_trend = [(g+h) for g, h in zip(d[scope], average_trend)]
+#             average_elapsed_ticks_to_answer += int(d[Trial_Data.elapse_ticks_to_answer.name])
+#     average_trend = [x / len(data) for x in average_trend]
+#     average_elapsed_ticks_to_answer = average_elapsed_ticks_to_answer / len(data)
+#     # average_trend = [x / len(data) for x in average_trend]
+#     # average_elapsed_ticks_to_answer = average_elapsed_ticks_to_answer / len(data)
+#     result = {
+#         "average_trend": average_trend,
+#         "average_elapsed_ticks_to_answer": average_elapsed_ticks_to_answer,
+#         "legend": condition
+#     }
+#     return result
 
 def average_within_condition_within_decision_phase(data, scope, condition=CONDITIONS[3]):
     average_trend = [0] * max([len(d[scope]) for d in data])
