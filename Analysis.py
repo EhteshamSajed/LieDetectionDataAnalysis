@@ -143,7 +143,7 @@ def single_subject_average_within_condition():
             data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, 
             participantAnswer=0, condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial)
         if len(extracted) == 0:
-            continue;
+            continue
         average_trend = Utilities.average_within_condition(
             extracted, scope.name, condition)
         # print (average_trend["average_trend"])
@@ -163,7 +163,7 @@ def average_within_condition():
     experiment_files = listdir(dir)
     scope = Utilities.Trial_Data.baseline_difference
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
-    feedbackCondition = 1
+    feedbackCondition = 0
     # condition_index = 2
     search_from = 0
     count = 30
@@ -183,7 +183,7 @@ def average_within_condition():
                     condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial
             )
             if len(extracted) == 0:
-                continue;
+                continue
             average_within_condition = Utilities.average_within_condition(
                     extracted, scope.name, condition)
             average_response_time += average_within_condition["average_elapsed_ticks_to_answer"]
