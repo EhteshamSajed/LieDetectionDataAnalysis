@@ -111,7 +111,7 @@ def assess_participants_answer(pupil_data_trial, expected_answer):
 
 def calculate_baseline_mean(data, feedbackCondition=0, baseline_source=Baseline_Source.baseline, index=0):
     global bs_mean
-    n = 60              # last n diameters within the list.
+    n = 60*3              # last n diameters within the list.
     if baseline_source == Baseline_Source.baseline:
         if bs_mean == -1:
             pupilDiameter = data['trials'][feedbackCondition]['pupilDataBaselines'][0]['pupilDiameter'][-n:]
@@ -166,18 +166,22 @@ def get_mean_line(data_array):
 def average_within_condition(data, scope, condition=CONDITIONS[3]):
     average_trend = [0] * max([len(d[scope]) for d in data])
     average_elapsed_ticks_to_answer = 0
+    average_pupil_size = 0
     # average_trend = [0] * len(data[0][scope])
     for d in data:
         if not isnan(d[scope]):
             average_trend = [(g+h) for g, h in zip(d[scope], average_trend)]
+            average_pupil_size += statistics.mean(d[scope])
             average_elapsed_ticks_to_answer += int(d[Trial_Data.elapse_ticks_to_answer.name])
     average_trend = [x / len(data) for x in average_trend]
+    average_pupil_size /= len(data)
     average_elapsed_ticks_to_answer = average_elapsed_ticks_to_answer / len(data)
     # average_trend = [x / len(data) for x in average_trend]
     # average_elapsed_ticks_to_answer = average_elapsed_ticks_to_answer / len(data)
     result = {
         "average_trend": average_trend,
         "average_elapsed_ticks_to_answer": average_elapsed_ticks_to_answer,
+        "average_pupil_size": average_pupil_size,
         "legend": condition
     }
     return result
