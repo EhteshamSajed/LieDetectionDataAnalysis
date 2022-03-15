@@ -1,5 +1,5 @@
 from os import listdir
-from openpyxl import Workbook, load_workbook
+from openpyxl import Workbook
 import json
 import Utilities
 
