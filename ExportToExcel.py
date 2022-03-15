@@ -2,7 +2,6 @@ from os import listdir
 from openpyxl import Workbook, load_workbook
 import json
 import Utilities
-import Smoother
 
 filePath = "ExcelExport/"
 
