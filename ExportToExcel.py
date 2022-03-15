@@ -25,7 +25,6 @@ fileNameDictionary = {
 }
 
 def getAveragePupilSize(feedbackCondition):
-    # fileName = "AllAveragePupil.xlsx"
     fileName = fileNameDictionary[feedbackCondition]
     wb = Workbook()
     ws = wb.active
