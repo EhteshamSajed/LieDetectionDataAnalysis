@@ -33,6 +33,7 @@ DECISION_PHASE = 120  # 2 seconds
 START_FRAME = 30
 POST_DECISION_PHASE = 60
 DECISION_PHASE_TICKS = DECISION_PHASE * 10000000/60
+TOTAL_DURATION_IN_TICKS = 80000000
 
 bs_mean = -1  # uninitialised baseline
 
@@ -182,6 +183,7 @@ def average_within_condition(data, scope, condition=CONDITIONS[3]):
         "average_trend": average_trend,
         "average_elapsed_ticks_to_answer": average_elapsed_ticks_to_answer,
         "average_pupil_size": average_pupil_size,
+        "relative_average_elapsed_ticks_to_answer": (average_elapsed_ticks_to_answer * len(average_trend) * 10000000 / (TOTAL_DURATION_IN_TICKS * 60)),
         "legend": condition
     }
     return result

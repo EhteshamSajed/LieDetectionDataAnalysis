@@ -1,8 +1,11 @@
+from locale import normalize
 from matplotlib import pyplot
 from numpy.lib.function_base import median
 import json
 import numpy as np
 import statistics
+
+from sympy import false, true
 import Utilities
 import OutlierDetector
 from os import listdir
@@ -123,16 +126,16 @@ def single_subject_average_within_condition():
     # experiment_files = ["ExpData/M33_4.dat", "testFiles/sampleJson.dat",
     # "testFiles/sampleJson2.dat", "ExpData/M27_3.dat", "ExpData/M31_2.dat"]
     # experiment_files = ["ExpData/V2/M25_5.dat"]
-    experiment_files = ["ExpData/V2/F27_19.dat"]
+    # experiment_files = ["ExpData/V2/F27_19.dat"]
     # experiment_files = ["ExpData/V2/F24_13.dat"]
-    # experiment_files = ["ExpData/V2/M25_5.dat", "ExpData/V2/M31_6.dat",
-    #                     "ExpData/V2/M28_7.dat", "ExpData/V2/F22_8.dat"]
+    experiment_files = ["ExpData/V2/M25_5.dat", "ExpData/V2/M31_6.dat",
+                        "ExpData/V2/M28_7.dat", "ExpData/V2/F22_8.dat"]
     scope = Utilities.Trial_Data.baseline_difference
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
     # scope = Utilities.Trial_Data.decision_phase
     row, col = Utilities.split_single_colunm(len(experiment_files))
     feedbackCondition = 0
-    condition_index = 5
+    condition_index = 0
     search_from = 0
     count = 30
     condition = Utilities.CONDITIONS[condition_index]
@@ -158,19 +161,18 @@ def single_subject_average_within_condition():
     pyplot.show()
 
 
-def average_within_condition():
+def combined_average_all():
     dir = "ExpData/V2/"
     experiment_files = listdir(dir)
     scope = Utilities.Trial_Data.baseline_difference
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
     feedbackCondition = 0
-    # condition_index = 2
     search_from = 0
     count = 30
     conditions = [2, 1, 4, 5]
+    normalize = true
     # conditions = [0, 2, 1]
     # conditions = [5]
-    # condition = Utilities.CONDITIONS[condition_index]
     for condition_index in conditions:
         i = 0
         condition = Utilities.CONDITIONS[condition_index]
@@ -194,13 +196,57 @@ def average_within_condition():
                                                         average_within_condition["average_trend"])]
             i += 1
         average_response_time = (average_response_time/i) / 10000000 * 60
-        # pyplot.plot(average_trend , '-o', markevery = [int (average_response_time)], label=condition)
+        if normalize:
+            average_trend = [x - average_trend[0] for x in average_trend]
         pyplot.plot(Smoother.smooth(average_trend, 10, True) , '-o', markevery = [int (average_response_time)], label=condition, color=colorDictionary[condition_index])
     pyplot.legend()
 
     pyplot.suptitle("Combined Average of all subjects. Feedback: " + str(feedbackCondition))
     pyplot.show()
 
+def individual_average_all():
+    dir = "ExpData/V2/"
+    experiment_files = listdir(dir)
+    # experiment_files = ["M25_5.dat", "M31_6.dat", "F22_8.dat"]
+    # experiment_files = ["M28_7.dat"]
+    experiment_files = ["F21_9.dat", "F21_16.dat", "F22_8.dat",
+                        "F23_15.dat", "F23_20.dat", "F24_13.dat"]
+    # experiment_files = ["F27_19.dat", "F29_14.dat", "M24_18.dat",
+    #                     "M25_5.dat", "M26_10.dat", "M26_12.dat"]
+    # experiment_files = ["M26_17.dat", "M28_7.dat", "M31_6.dat",
+    #                     "M31_11.dat"]
+    row, col = Utilities.split_single_colunm(len(experiment_files))
+    scope = Utilities.Trial_Data.baseline_difference
+    # scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    feedbackCondition = 0
+    search_from = 0
+    count = 30
+    conditions = [2, 1, 4, 5]
+    normalize = False
+    # conditions = [0, 2, 1]
+    # conditions = [5]
+    i = 1
+    for file in experiment_files:
+        data = json.load(open(dir + file))
+        for condition_index in conditions:
+            condition = Utilities.CONDITIONS[condition_index]
+            extracted = Utilities.extract_data(
+                data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, 
+                participantAnswer=0, condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial)
+            if len(extracted) == 0:
+                continue
+            average_trend = Utilities.average_within_condition(
+                extracted, scope.name, condition)
+            if normalize:
+                average_trend = [x - average_trend[0] for x in average_trend]
+            pyplot.subplot(row, col, i)
+            # pyplot.plot(average_trend["average_trend"], label=data["participantName"])
+            pyplot.plot(average_trend["average_trend"], '-D', label=condition, color=colorDictionary[condition_index], 
+                        markevery = [int (average_trend["relative_average_elapsed_ticks_to_answer"]/10000000 * 60)])
+            pyplot.legend()
+        i += 1
+    pyplot.suptitle("Combined Average of all subjects. Feedback: " + str(feedbackCondition))
+    pyplot.show()
 
 def single_subject_plot_within_condition():
     # file = "ExpData/V2/M25_5.dat"
@@ -262,11 +308,15 @@ def single_subject_dynamic_difference():
 
 def unit_data_comparison():
     file = "ExpData/M33_4.dat"
+    file = "ExpData/V2/F27_19.dat"
     feedbackCondition = 1
+    feedbackCondition = 0
     index = 0
     data = json.load(open(file))
     extracted = Utilities.extract_data(
-        data, feedbackCondition=feedbackCondition)
+        data, feedbackCondition=feedbackCondition, search_from=2, count=1)
+    # extracted = Utilities.extract_data(
+    #     data, feedbackCondition=feedbackCondition)
     pyplot.subplot(3, 1, 1)
     pyplot.plot(extracted[index][Utilities.Trial_Data.raw.name])
     pyplot.title("RAW")
@@ -313,7 +363,8 @@ def plot_baseline():
     pyplot.show()
 
 # single_subject_average_within_condition()
-average_within_condition()
+individual_average_all()
+# combined_average_all()
 # unit_data_comparison()
 # showZeroedOutliers()
 # scatter_plot_mean()
