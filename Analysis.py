@@ -1,4 +1,6 @@
+from cProfile import label
 from locale import normalize
+from tkinter import font
 from matplotlib import pyplot
 from numpy.lib.function_base import median
 import json
@@ -11,6 +13,7 @@ import OutlierDetector
 from os import listdir
 import Smoother
 
+pyplot.rcParams.update({'font.size': 12})
 
 colorDictionary = {
     0: "k",
@@ -318,14 +321,37 @@ def unit_data_comparison():
     # extracted = Utilities.extract_data(
     #     data, feedbackCondition=feedbackCondition)
     pyplot.subplot(3, 1, 1)
-    pyplot.plot(extracted[index][Utilities.Trial_Data.raw.name])
-    pyplot.title("RAW")
+    pyplot.plot(extracted[index][Utilities.Trial_Data.raw.name], label="RAW")
+    pyplot.xlabel("number of frames")
+    pyplot.ylabel("pupil size")
+    pyplot.legend()
+    # pyplot.title("RAW")
     pyplot.subplot(3, 1, 2)
-    pyplot.plot(extracted[index][Utilities.Trial_Data.removed_ouliers.name])
-    pyplot.title("Outliers removed")
+    pyplot.plot(extracted[index][Utilities.Trial_Data.removed_ouliers.name], label="Outliers removed")
+    pyplot.xlabel("number of frames")
+    pyplot.ylabel("pupil size")
+    pyplot.legend()
+    # pyplot.title("Outliers removed")
     pyplot.subplot(3, 1, 3)
-    pyplot.plot(extracted[index][Utilities.Trial_Data.smoothed.name])
-    pyplot.title("Smoothed")
+    pyplot.plot(extracted[index][Utilities.Trial_Data.smoothed.name], label="Smoothed")
+    pyplot.xlabel("number of frames")
+    pyplot.ylabel("pupil size")
+    pyplot.legend()
+    # pyplot.title("Smoothed")
+    
+    # pyplot.subplot(2, 1, 1)
+    # pyplot.plot(extracted[index][Utilities.Trial_Data.removed_ouliers.name], label="Before Normalization")
+    # pyplot.xlabel("number of frames")
+    # pyplot.ylabel("pupil size")
+    # pyplot.legend()
+    # # pyplot.title("Before Normalization")
+    # pyplot.subplot(2, 1, 2)
+    # pyplot.plot(extracted[index][Utilities.Trial_Data.baseline_difference.name], label="After Normalization")
+    # pyplot.xlabel("number of frames")
+    # pyplot.ylabel("pupil size (Baseline difference)")
+    # # pyplot.title("After Normalization")
+    # pyplot.legend()
+    
     pyplot.show()
 
 
@@ -363,9 +389,9 @@ def plot_baseline():
     pyplot.show()
 
 # single_subject_average_within_condition()
-individual_average_all()
+# individual_average_all()
 # combined_average_all()
-# unit_data_comparison()
+unit_data_comparison()
 # showZeroedOutliers()
 # scatter_plot_mean()
 # delta_plot()
