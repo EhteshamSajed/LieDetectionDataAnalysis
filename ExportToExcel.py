@@ -63,32 +63,27 @@ def getAveragePupilSize(feedbackCondition):
     # conditions = [0, 2, 1]
     # conditions = [4, 5]
     # condition = Utilities.CONDITIONS[condition_index]
-    for condition_index in conditions:
-        i = 2
-        condition = Utilities.CONDITIONS[condition_index]
-        print (condition_index)
-        for file in experiment_files:
-            if file=="M24_18.dat":
-                print("Opened " + file)
-            data = json.load(open(dir + file))
+    i = 2
+    for file in experiment_files:
+        data = json.load(open(dir + file))
+        for condition_index in conditions:
+            condition = Utilities.CONDITIONS[condition_index]
+            # data = json.load(open(dir + file))
             extracted = Utilities.extract_data(
                 data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0,
                     condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial
             )
             if len(extracted) == 0:
-                i += 1
                 continue
             average_within_condition = Utilities.average_within_condition(
-                    extracted, scope.name, condition)
-            
-            ws['A' + str(i)].value = file.removesuffix(".dat")
+                    extracted, scope.name, condition)     
             ws[pupilSizeColumn[condition_index] + str(i)].value = average_within_condition["average_pupil_size"]
             ws[responseTimeColumn[condition_index] + str(i)].value = average_within_condition["average_elapsed_ticks_to_answer"] / 10000000
             ws[numberColumn[condition_index] + str(i)].value = average_within_condition["number_of_data"]
-            # print column names and values to be sure
-            print (file + " " + (numberColumn[condition_index] + str(i)) + " " + str(average_within_condition["number_of_data"]))
-            i += 1
-            # print(average_within_condition["average_pupil_size"])
+
+        ws['A' + str(i)].value = file.removesuffix(".dat")
+        i += 1
+
     wb.save(filePath+fileName)
     print ("Exported to file: "+ filePath+fileName)
     
