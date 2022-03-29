@@ -68,7 +68,6 @@ def getAveragePupilSize(feedbackCondition):
         data = json.load(open(dir + file))
         for condition_index in conditions:
             condition = Utilities.CONDITIONS[condition_index]
-            # data = json.load(open(dir + file))
             extracted = Utilities.extract_data(
                 data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0,
                     condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial
