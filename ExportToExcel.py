@@ -19,6 +19,13 @@ responseTimeColumn = {
     5: "J"
 }
 
+numberColumn = {
+    1: "L",
+    2: "M",
+    4: "N",
+    5: "O"
+}
+
 fileNameDictionary = {
     0: "AllAverage_NoFeedback.xlsx",
     1: "AllAverage_Feedback.xlsx"
@@ -38,6 +45,11 @@ def getAveragePupilSize(feedbackCondition):
     ws['H1'].value = "Lies Sec."
     ws['I1'].value = "Free Trues Sec."
     ws['J1'].value = "Free Lies Sec."
+
+    ws['L1'].value = "# Trues"
+    ws['M1'].value = "# Lies"
+    ws['N1'].value = "# Free Trues"
+    ws['O1'].value = "# Free Lies"
 
     dir = "ExpData/V2/"
     experiment_files = listdir(dir)
@@ -68,6 +80,7 @@ def getAveragePupilSize(feedbackCondition):
             ws['A' + str(i)].value = file.removesuffix(".dat")
             ws[pupilSizeColumn[condition_index] + str(i)].value = average_within_condition["average_pupil_size"]
             ws[responseTimeColumn[condition_index] + str(i)].value = average_within_condition["average_elapsed_ticks_to_answer"] / 10000000
+            ws[numberColumn[condition_index] + str(i)].value = average_within_condition["number_of_data"]
             i += 1
             # print(average_within_condition["average_pupil_size"])
     wb.save(filePath+fileName)

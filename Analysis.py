@@ -389,9 +389,9 @@ def plot_baseline():
     pyplot.show()
 
 # single_subject_average_within_condition()
-# individual_average_all()
+individual_average_all()
 # combined_average_all()
-unit_data_comparison()
+# unit_data_comparison()
 # showZeroedOutliers()
 # scatter_plot_mean()
 # delta_plot()

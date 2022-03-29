@@ -184,6 +184,7 @@ def average_within_condition(data, scope, condition=CONDITIONS[3]):
         "average_elapsed_ticks_to_answer": average_elapsed_ticks_to_answer,
         "average_pupil_size": average_pupil_size,
         "relative_average_elapsed_ticks_to_answer": (average_elapsed_ticks_to_answer * len(average_trend) * 10000000 / (TOTAL_DURATION_IN_TICKS * 60)),
+        "number_of_data": len(data),
         "legend": condition
     }
     return result
