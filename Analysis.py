@@ -163,12 +163,63 @@ def single_subject_average_within_condition():
                     " for different subjects. Feedback: " + str(feedbackCondition))
     pyplot.show()
 
+def combined_average_all_decision():
+    dir = "ExpData/V2/"
+    experiment_files = listdir(dir)
+    # experiment_files = ["M25_5.dat", "M31_6.dat", "F22_8.dat"]
+    # experiment_files = ["M28_7.dat"]
+    # experiment_files = ["F21_9.dat", "F21_16.dat", "F22_8.dat",
+    #                     "F23_15.dat", "F23_20.dat", "F24_13.dat"]
+    # experiment_files = ["F27_19.dat", "F29_14.dat", "M24_18.dat",
+    #                     "M25_5.dat", "M26_10.dat", "M26_12.dat"]
+    # experiment_files = ["M26_17.dat", "M28_7.dat", "M31_6.dat",
+    #                     "M31_11.dat"]
+    # experiment_files = ["F21_9.dat"]    
+    feedbackCondition = 1
+    search_from = 0
+    count = 30
+    conditions = [2, 1, 4, 5]    
+    trial_counts = []
+    normalize = False
+    for condition_index in conditions:        
+        trial_count = 0
+        condition = Utilities.CONDITIONS[condition_index]
+        average_trend = []
+        for file in experiment_files:
+            data = json.load(open(dir + file))
+            extracted = Utilities.extract_data(
+                data=data, search_from=search_from, count=count, feedbackCondition=feedbackCondition, participantAnswer=0,
+                    condition_index=condition_index, baseline_source=Utilities.Baseline_Source.preceding_trial, skip_early_decision_phase=True
+            )
+            if len(extracted) == 0:
+                continue
+            trial_count += len(extracted)
+            average_within_condition_decision_phase = Utilities.average_within_condition(
+                    extracted, Utilities.Trial_Data.baseline_difference_decision_phase.name, condition)
 
+            if len(average_trend) == 0:
+                average_trend = average_within_condition_decision_phase["average_trend"]
+            else:
+                average_trend = [(x + y)/2 for x, y in zip(average_trend,
+                                    average_within_condition_decision_phase["average_trend"])]
+        smoothed = Smoother.smooth(average_trend, 10, True)
+        if normalize:
+            smoothed = [x - smoothed[0] for x in smoothed]
+        pyplot.plot(smoothed , '-', label=condition, color=colorDictionary[condition_index])
+        trial_counts.append(trial_count)
+    print("*** Total number of trials ***")
+    print(trial_counts)
+    pyplot.legend()
+    pyplot.suptitle("Combined Average of all subjects. Feedback: " + str(feedbackCondition))
+    pyplot.show()
+            
 def combined_average_all():
     dir = "ExpData/V2/"
     experiment_files = listdir(dir)
     scope = Utilities.Trial_Data.baseline_difference
     # scope = Utilities.Trial_Data.baseline_difference_decision_phase
+    # scope = Utilities.Trial_Data.removed_ouliers
+    # scope = Utilities.Trial_Data.initial_decision_phase
     feedbackCondition = 0
     search_from = 0
     count = 30
@@ -191,17 +242,20 @@ def combined_average_all():
                 continue
             average_within_condition = Utilities.average_within_condition(
                     extracted, scope.name, condition)
-            average_response_time += average_within_condition["average_elapsed_ticks_to_answer"]
+            average_response_time += average_within_condition["relative_average_elapsed_ticks_to_answer"]
             if len(average_trend) == 0:
                 average_trend = average_within_condition["average_trend"]
             else:
                 average_trend = [(x + y)/2 for x, y in zip(average_trend,
                                                         average_within_condition["average_trend"])]
             i += 1
+        smoothed = Smoother.smooth(average_trend, 10, True)
         average_response_time = (average_response_time/i) / 10000000 * 60
+        average_response_time = average_response_time if average_response_time <= len(smoothed) else len(smoothed)
         if normalize:
-            average_trend = [x - average_trend[0] for x in average_trend]
-        pyplot.plot(Smoother.smooth(average_trend, 10, True) , '-o', markevery = [int (average_response_time)], label=condition, color=colorDictionary[condition_index])
+            smoothed = [x - smoothed[0] for x in smoothed]
+        pyplot.plot(smoothed , '-o', markevery = [int (average_response_time)], label=condition, color=colorDictionary[condition_index])
+        # pyplot.plot(Smoother.smooth(average_trend, 10, True) , '-o', markevery = [int (average_response_time)], label=condition, color=colorDictionary[condition_index])
     pyplot.legend()
 
     pyplot.suptitle("Combined Average of all subjects. Feedback: " + str(feedbackCondition))
@@ -389,8 +443,9 @@ def plot_baseline():
     pyplot.show()
 
 # single_subject_average_within_condition()
-individual_average_all()
+# individual_average_all()
 # combined_average_all()
+combined_average_all_decision()
 # unit_data_comparison()
 # showZeroedOutliers()
 # scatter_plot_mean()

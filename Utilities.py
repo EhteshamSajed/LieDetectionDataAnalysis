@@ -1,5 +1,6 @@
 from matplotlib import pyplot
 from numpy.lib.function_base import median
+from pytest import mark
 import OutlierDetector
 import Smoother
 import statistics
@@ -29,7 +30,7 @@ class Baseline_Source(enum.Enum):
 
 CONDITIONS = ['Free', 'True', 'Lie', 'All', 'Free_True', 'Free_Lie']
 ANSWERES = ['Any', 'True', 'False']
-DECISION_PHASE = 120  # 2 seconds
+DECISION_PHASE = 60*2  # 2 seconds
 START_FRAME = 30
 POST_DECISION_PHASE = 60
 DECISION_PHASE_TICKS = DECISION_PHASE * 10000000/60
@@ -38,23 +39,20 @@ TOTAL_DURATION_IN_TICKS = 80000000
 bs_mean = -1  # uninitialised baseline
 
 
-def extract_data(data, search_from=0, count=30, feedbackCondition=0, participantAnswer=1, condition_index=3, baseline_source=Baseline_Source.baseline):
+def extract_data(data, search_from=0, count=30, feedbackCondition=0, participantAnswer=1, condition_index=3, baseline_source=Baseline_Source.baseline, skip_early_decision_phase = False):
     pupilDataTrials = data['trials'][feedbackCondition]['pupilDataTrials']
-    # bs_mean = calculate_baseline_mean(data, feedbackCondition)
     extracted = []
     while (search_from < len(pupilDataTrials) and count > 0):
         pupil_data_trial = pupilDataTrials[search_from]
-        if filter_pupil_data_trial(pupil_data_trial, condition_index, participantAnswer):
+        if (filter_pupil_data_trial(pupil_data_trial, condition_index, participantAnswer) and        
+                (not skip_early_decision_phase or int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60) > DECISION_PHASE)):
             bs_mean = calculate_baseline_mean(data, feedbackCondition,
                                                 index=search_from, baseline_source=baseline_source)
             removed_ouliers = OutlierDetector.remove_outliers(
                 pupil_data_trial['pupilDiameter'][START_FRAME:], True)
-            markerPos = []
-            markerPos.append(OutlierDetector.relative_position_on_removed_outiler(
-                removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60)))
             smoothed = Smoother.smooth(removed_ouliers, 10, True)
             marker = OutlierDetector.relative_position_on_removed_outiler(
-                removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60))
+                removed_ouliers, int(pupil_data_trial['elapseTicksToAnswer']/10000000 * 60))  
             trial = {
                 Trial_Data.raw.name: pupil_data_trial['pupilDiameter'],
                 Trial_Data.removed_ouliers.name: removed_ouliers,
@@ -170,7 +168,7 @@ def average_within_condition(data, scope, condition=CONDITIONS[3]):
     average_pupil_size = 0
     # average_trend = [0] * len(data[0][scope])
     for d in data:
-        if not isnan(d[scope]):
+        if not isnan(d[scope]) and len(d[scope])!= 0:
             average_trend = [(g+h) for g, h in zip(d[scope], average_trend)]
             average_pupil_size += statistics.mean(d[scope])
             average_elapsed_ticks_to_answer += int(d[Trial_Data.elapse_ticks_to_answer.name])
